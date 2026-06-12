@@ -359,3 +359,24 @@
 | PR14 short mobile viewport | Browser viewport 375x667 | bottom bar remains usable | 4 buttons at 58px height, `scrollWidth=360`, `clientWidth=360` | passed |
 | PR14 safe-area padding | Browser viewport 390x844 | content bottom padding clears mobile action bar | `paddingBottom=96px`, nav visible | passed |
 | PR14 build | `npm run build` | TypeScript and Vite build pass | `node.exe` access denied in current sandbox | blocked |
+
+### PR15: README 依赖清单与交付说明
+- **Status:** in_progress
+- Actions taken:
+  - 将 README 重写为交付版，补齐核心流程、当前功能、本地开发、手机 Safari 调试、环境变量、依赖清单、原创功能、验证方式、MVP 边界和目录结构
+  - 按运行时依赖和开发依赖分组说明第三方库用途
+  - 明确 API key 不进入 `.env`、源码或浏览器持久化存储
+  - 同步 `CODEX.md` 目录结构，补充 `DialogueStatus`、`MobileActionBar` 和 `useSpeechSynthesis`
+  - 文档检查确认 README 包含第三方依赖、原创功能、验证方式、MVP 边界和 API key 安全说明
+- Files created/modified:
+  - README.md
+  - CODEX.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR15
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| README required sections | `Select-String README.md` | dependencies, original features, verification, MVP boundary, API key safety present | all required sections found | passed |
+| PR15 build | Documentation-only PR | No runtime build required | no source runtime code changed | skipped |

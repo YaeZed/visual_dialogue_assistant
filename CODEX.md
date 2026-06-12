@@ -23,14 +23,17 @@ src/
 ├── components/       # 业务 UI 组件
 │   ├── ui/           # shadcn/ui 基础组件
 │   ├── Orb.tsx       # Orb 发光实体
-│   └── Caption.tsx   # 字幕浮层
+│   ├── Caption.tsx   # 字幕浮层
+│   ├── DialogueStatus.tsx # 对话状态整合层
+│   └── MobileActionBar.tsx # 手机底部触控栏
 ├── hooks/            # 自定义 hooks
 │   ├── useCamera.ts
 │   ├── useMicrophone.ts
 │   ├── useSpeechRecognition.ts
 │   ├── useFrameCapture.ts
 │   ├── useAiChat.ts
-│   └── useOrbState.ts
+│   ├── useOrbState.ts
+│   └── useSpeechSynthesis.ts
 ├── lib/              # 工具函数与 API 封装
 │   ├── api.ts
 │   └── utils.ts
@@ -70,4 +73,3 @@ npm run tunnel
 ```
 idle（灰色静态） -> listening（蓝色脉动） -> thinking（金色旋转） -> speaking（绿色波纹） -> idle
 ```
-
