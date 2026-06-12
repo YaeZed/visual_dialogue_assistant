@@ -69,10 +69,19 @@
   - 添加摄像头权限、无设备、通用错误的可行动反馈文案
   - 浏览器验证首屏加载、Start camera 按钮、无摄像头/无权限路径的 Retry camera 反馈
   - 移动视口 390x844 检查通过，无横向溢出
+  - 提交 PR4：`fc74e08 Add camera preview module`
+  - 开始 PR5：实现 `useMicrophone` hook，封装麦克风权限、音频流和错误映射
+  - 实现 `useSpeechRecognition` hook，封装 Web Speech API、连续识别、interim/final transcript 和错误映射
+  - 补充 Web Speech API TypeScript 类型声明
+  - UI 增加麦克风授权、开始/停止识别、transcript 展示与清空入口
+  - 浏览器验证语音控件可见、桌面无麦克风/无权限失败路径、移动端无横向溢出
 - Files created/modified:
   - src/hooks/useCamera.ts
   - src/App.tsx
   - README.md
+  - src/hooks/useMicrophone.ts
+  - src/hooks/useSpeechRecognition.ts
+  - src/vite-env.d.ts
 
 ### Phase 3: AI 对话核心
 - **Status:** pending
@@ -114,6 +123,11 @@
 | Camera module build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.25s | passed |
 | Camera start fallback | Browser click `Start camera` | actionable failure state on desktop without camera | shows `Retry camera` and camera error text | passed |
 | Mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=390`, `clientWidth=390` | passed |
+| Git commit | `git commit -m "Add camera preview module"` | local commit created | `fc74e08` | passed |
+| Speech module build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.25s | passed |
+| Speech UI presence | Browser DOM snapshot | microphone and transcript controls visible | `Enable microphone`, `Start listening`, transcript placeholder visible | passed |
+| Microphone fallback | Browser click `Enable microphone` | actionable failure state on desktop without microphone | shows `Retry microphone` and microphone error text | passed |
+| Speech mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -122,12 +136,13 @@
 | 2026-06-12 | PowerShell 不支持 `&&`；并行 `npm install` 导致 lockfile 结果互相覆盖 | 第一次安装 PR2 依赖 | 不再并行 npm install，顺序补装依赖后 build 通过 |
 | 2026-06-12 | Vite 6 CLI 报 `Unknown option --https` | 第一次验证 `dev:https` | 改为通过 `VITE_DEV_HTTPS=true` 在 Vite config 中启用 basic SSL |
 | 2026-06-12 | `Invoke-WebRequest -SkipCertificateCheck` 在当前 PowerShell 不可用 | HTTPS 请求验证 | 改为读取 dev server 日志确认 HTTPS 地址启动成功 |
+| 2026-06-12 | Node REPL 持久变量名重复导致 `Identifier has already been declared` | 浏览器验证语音 UI | 换用新的临时变量名继续验证 |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 2 进行中，PR4 摄像头模块已实现并验证，待提交 |
+| Where am I? | Phase 2 进行中，PR4 已提交；PR5 麦克风与语音识别已实现并验证，待提交 |
 | Where am I going? | Phase 1 → 6，共 16 个 PR |
 | What's the goal? | AI 视觉对话助手 MVP，Orb 交互隐喻，手机 Safari 可演示 |
 | What have I learned? | iOS Safari HTTPS 要求、Web Speech API 兼容性、模型选型 |
-| What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、完成 PR1-PR3；已实现 PR4 摄像头预览、权限请求和失败重试反馈 |
+| What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、完成 PR1-PR4；已实现 PR5 麦克风权限、Web Speech API 识别和 transcript UI |
