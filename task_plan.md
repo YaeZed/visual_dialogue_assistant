@@ -68,6 +68,7 @@ Phase 1
 | Error | Attempt | Resolution |
 |-------|---------|------------|
 | `node --version` 执行失败：拒绝访问；`npm` 不在 PATH | 验证本地 Node/npm 可用性 | 提权后确认 `node` 可用；`npm` 路径为 `C:\nvm4w\nodejs\npm.cmd`；已用该路径安装依赖并通过 build |
+| PowerShell 不支持 `&&`；并行执行两个 `npm install` 导致依赖结果被覆盖 | 安装 PR2 UI 依赖 | 改为顺序执行 npm install；已补齐 Tailwind、Framer Motion、lucide、shadcn 基础依赖并通过 build |
 
 ## Notes
 - 台式机无摄像头/麦克风，开发期 PC 写代码、手机 Safari 测试
@@ -75,3 +76,5 @@ Phase 1
 - 第一天至少完成 PR1-6，让手机能打开页面、看到摄像头画面、语音识别文字显示
 - 2026-06-12: 已补齐 `CODEX.md`，后续按该项目规范执行。
 - 2026-06-12: PR1 骨架已手工创建，包含 Vite/React/TS 配置、入口页面和基础 README；`npm run build` 已通过。
+- 2026-06-12: PR1 已提交，commit `29fdbe0 Initialize Vite React project`。
+- 2026-06-12: PR2 UI 基础已接入：Tailwind CSS v4、shadcn/ui 基础结构、Framer Motion、lucide icons；`npm run build` 已通过。
