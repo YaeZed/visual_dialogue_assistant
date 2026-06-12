@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, CameraOff, Image, KeyRound, Mic, Send, Sparkles, Volume2 } from "lucide-react";
+import { Orb } from "@/components/Orb";
 import { Button } from "@/components/ui/button";
 import { useAiChat } from "@/hooks/useAiChat";
 import { useCamera, type CameraStatus } from "@/hooks/useCamera";
 import { useFrameCapture } from "@/hooks/useFrameCapture";
 import { useMicrophone, type MicrophoneStatus } from "@/hooks/useMicrophone";
+import { useOrbState } from "@/hooks/useOrbState";
 import {
   useSpeechRecognition,
   type SpeechRecognitionStatus,
@@ -188,6 +190,7 @@ function App() {
   const canCaptureFrame = isReady && frameStatus !== "capturing";
   const canAskAi = Boolean(apiKey.trim() && questionText && frame) && !isThinking;
   const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
+  const orbState = useOrbState({ isListening, isThinking });
   const workflowSteps = [
     { label: "Camera", state: isReady ? "ready" : "next", icon: Camera },
     {
@@ -268,6 +271,10 @@ function App() {
             autoPlay
           />
 
+          {isReady && (
+            <Orb className="pointer-events-none absolute right-4 top-4 z-10" size="sm" state={orbState} />
+          )}
+
           {!isReady && (
             <div className="relative self-center justify-self-center aspect-square w-[min(62vw,280px)]">
               <div className="absolute inset-0 rounded-full border border-slate-200/50" />
@@ -276,7 +283,7 @@ function App() {
                 {cameraCopy.tone === "error" ? (
                   <CameraOff className="size-10 text-warning" aria-hidden="true" />
                 ) : (
-                  <Camera className="size-10 text-accent" aria-hidden="true" />
+                  <Orb size="sm" state={orbState} />
                 )}
               </div>
               <div className="scan-line absolute left-[12%] top-[18%] h-0.5 w-[76%] bg-accent shadow-[0_0_18px_rgba(94,234,212,0.7)]" />

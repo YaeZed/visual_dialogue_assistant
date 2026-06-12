@@ -48,6 +48,7 @@
 | OpenAI-compatible 视觉输入格式支持 `content` 数组中的 `image_url`，且图片可用 base64 data URL | PR7 API 层按该格式构造多模态 Chat Completions 请求；来源：https://developers.openai.com/api/docs/guides/images-vision |
 | 多轮上下文不应重复上传历史图片 | PR9 只传最近 4 轮文本问答；当前图片仍以本次抓帧为准，降低 token/带宽成本 |
 | 兜底截图提问必须避免误触不可用状态 | PR10 仅在摄像头可抓帧时把预览区暴露为 button；无摄像头/无权限时不提供假入口 |
+| Orb 是状态可视化，不应成为新交互入口 | PR11 将 Orb 设置为 `role=img`，只表达当前 AI 状态，不抢占按钮/预览区操作 |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl
