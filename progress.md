@@ -28,6 +28,11 @@
   - 验证本机 Node/npm：沙箱内 `node --version` 被拒绝访问，`npm` 不在 PATH；提权后 Node 可用
   - 使用 `C:\nvm4w\nodejs\npm.cmd install` 安装依赖
   - 使用 `C:\nvm4w\nodejs\npm.cmd run build` 完成 TypeScript + Vite 构建验证
+  - 初始化 Git 仓库并提交 PR1：`29fdbe0 Initialize Vite React project`
+  - 开始 PR2：接入 Tailwind CSS v4 Vite 插件、shadcn/ui 基础结构、Framer Motion 与 lucide icons
+  - 创建 `components.json`、`src/lib/utils.ts`、`src/components/ui/button.tsx`
+  - 将首页从手写 CSS 类迁移为 Tailwind 工具类与 Motion 进场动效
+  - 顺序安装 PR2 依赖并通过 build
 - Files created/modified:
   - CODEX.md
   - .gitignore
@@ -43,6 +48,9 @@
   - src/styles.css
   - src/vite-env.d.ts
   - package-lock.json
+  - components.json
+  - src/lib/utils.ts
+  - src/components/ui/button.tsx
 
 ### Phase 2: 媒体采集与语音识别
 - **Status:** pending
@@ -80,17 +88,21 @@
 | Node availability outside sandbox | `node --version` | prints version | v20.19.5 | passed |
 | Dependency install | `C:\nvm4w\nodejs\npm.cmd install` | installs dependencies | 69 packages installed, 0 vulnerabilities | passed |
 | Production build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 738ms | passed |
+| Git commit | `git commit -m "Initialize Vite React project"` | local commit created | `29fdbe0` | passed |
+| UI dependency install | `C:\nvm4w\nodejs\npm.cmd install ...` | installs Tailwind/shadcn/motion dependencies | 0 vulnerabilities | passed |
+| UI build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.25s | passed |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
 |-----------|-------|---------|------------|
 | 2026-06-12 | `node --version` 拒绝访问；`npm` 不在 PATH | 尝试验证本机 JS 工具链 | 提权后确认 Node v20.19.5 可用，使用 `C:\nvm4w\nodejs\npm.cmd` 完成安装和 build |
+| 2026-06-12 | PowerShell 不支持 `&&`；并行 `npm install` 导致 lockfile 结果互相覆盖 | 第一次安装 PR2 依赖 | 不再并行 npm install，顺序补装依赖后 build 通过 |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 1 进行中，PR1 项目骨架已创建且 build 通过；下一步进入 PR2 UI 基础 |
+| Where am I? | Phase 1 进行中，PR1 已提交；PR2 UI 基础已实现并通过 build，待提交 |
 | Where am I going? | Phase 1 → 6，共 16 个 PR |
 | What's the goal? | AI 视觉对话助手 MVP，Orb 交互隐喻，手机 Safari 可演示 |
 | What have I learned? | iOS Safari HTTPS 要求、Web Speech API 兼容性、模型选型 |
-| What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、创建 Vite + React + TypeScript 骨架、安装依赖并通过 build |
+| What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、创建 Vite + React + TypeScript 骨架、安装依赖并通过 build；已接入 UI 基础依赖和 shadcn 组件骨架 |
