@@ -43,7 +43,7 @@ export function MobileActionBar({
 }: MobileActionBarProps) {
   return (
     <nav
-      aria-label="Mobile primary actions"
+      aria-label="移动端主要操作"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-panel-border bg-background/86 px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-18px_42px_rgba(0,0,0,0.34)] backdrop-blur-md md:hidden"
     >
       <div className="mx-auto grid max-w-[520px] grid-cols-4 gap-2">
@@ -56,7 +56,7 @@ export function MobileActionBar({
           variant={isCameraReady ? "secondary" : "default"}
         >
           <Camera aria-hidden="true" className="size-5" />
-          Camera
+          摄像头
         </Button>
 
         <Button
@@ -75,11 +75,11 @@ export function MobileActionBar({
           ) : (
             <Mic aria-hidden="true" className="size-5" />
           )}
-          Voice
+          语音
         </Button>
 
         <Button
-          aria-label="Capture frame"
+          aria-label="抓取画面"
           className="h-[58px] min-h-[58px] flex-col gap-1 px-2 text-[0.68rem]"
           disabled={!canCaptureFrame}
           onClick={onCaptureFrame}
@@ -87,18 +87,18 @@ export function MobileActionBar({
           variant="secondary"
         >
           <Image aria-hidden="true" className="size-5" />
-          Frame
+          画面
         </Button>
 
         <Button
-          aria-label="Ask AI"
+          aria-label="提问 AI"
           className="h-[58px] min-h-[58px] flex-col gap-1 px-2 text-[0.68rem]"
           disabled={!canAskAi}
           onClick={onAskAi}
           type="button"
         >
           <Send aria-hidden="true" className="size-5" />
-          {isThinking ? "Asking" : "Ask"}
+          {isThinking ? "提问中" : "提问"}
         </Button>
       </div>
     </nav>

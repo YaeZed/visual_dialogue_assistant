@@ -23,14 +23,14 @@ function isChineseText(text: string) {
 
 function getSpeechErrorMessage(error: string) {
   if (error === "not-allowed") {
-    return "Speech playback is blocked. Tap play to try again.";
+    return "语音播放被浏览器阻止。请点击重播回答再试。";
   }
 
   if (error === "interrupted" || error === "canceled") {
     return null;
   }
 
-  return "Speech playback failed. Try replaying the answer.";
+  return "语音播放失败。请点击重播回答再试。";
 }
 
 function findPreviousBoundary(text: string, charIndex: number) {
@@ -100,7 +100,7 @@ export function useSpeechSynthesis() {
         setState({
           status: "unsupported",
           captionText: "",
-          errorMessage: "Speech synthesis is not supported in this browser.",
+          errorMessage: "当前浏览器不支持语音合成。",
         });
         return;
       }

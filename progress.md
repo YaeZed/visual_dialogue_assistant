@@ -402,3 +402,54 @@
 | Design doc required sections | `Select-String docs/design.md` | user stories, cost control, failure recovery, privacy, tradeoffs present | all required sections found | passed |
 | README design link | `Select-String README.md docs/design.md` | README links to design document | link found | passed |
 | PR16 build | Documentation-only PR | No runtime build required | no source runtime code changed | skipped |
+
+### PR17: 手机 ngrok 访问修复
+- **Status:** merged
+- Actions taken:
+  - 在 Vite `server.allowedHosts` 放行 ngrok 免费域名
+  - 将 ngrok 脚本从本地 HTTPS 转发改为本地 HTTP dev server 转发
+  - 同步 README/CODEX 中的手机测试命令为 `npm run dev` + `npm run tunnel`
+- Files modified:
+  - vite.config.ts
+  - scripts/start-ngrok.ps1
+  - README.md
+  - CODEX.md
+
+### PR18: 千问 DashScope 默认视觉接口
+- **Status:** merged
+- Actions taken:
+  - 将默认 OpenAI-compatible base URL 改为 DashScope
+  - 将默认视觉模型改为 `qwen-vl-plus`
+  - 将请求 token 参数改为 `max_tokens`
+  - 用户真机确认千问视觉问答链路跑通
+- Files modified:
+  - src/lib/api.ts
+  - .env.example
+  - README.md
+  - CODEX.md
+
+### PR19: 前端中文化与错误诊断提示
+- **Status:** in_progress
+- Actions taken:
+  - 将主界面、移动底栏、状态浮层、权限错误、抓帧错误、语音错误改为中文文案
+  - AI 请求错误增加 HTTP 状态和下一步排查提示
+  - 修复手机测试时 “AI request failed” 过于笼统的问题
+- Files modified:
+  - src/App.tsx
+  - src/components/DialogueStatus.tsx
+  - src/components/MobileActionBar.tsx
+  - src/hooks/useAiChat.ts
+  - src/hooks/useCamera.ts
+  - src/hooks/useFrameCapture.ts
+  - src/hooks/useMicrophone.ts
+  - src/hooks/useSpeechRecognition.ts
+  - src/hooks/useSpeechSynthesis.ts
+  - src/lib/api.ts
+  - task_plan.md
+  - progress.md
+
+## Test Results: PR19
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed | passed |
+| Build | `npm run build` | TypeScript and Vite build pass | Codex shell cannot find `npm`; user needs to run locally | blocked |

@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 5 / PR16
+Phase 6 / PR19
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -52,6 +52,13 @@ Phase 5 / PR16
 | PR15 | README：依赖清单 + 原创功能说明 | 全部 |
 | PR16 | 设计文档：用户故事 + 运营成本控制策略 | 全部 |
 
+### Phase 5: 真机测试修复与本地化
+| PR# | 内容 | 依赖 |
+|-----|------|------|
+| PR17 | 修复 ngrok 手机访问被 Vite host check 拦截 | PR16 |
+| PR18 | 切换默认视觉模型到千问 DashScope | PR17 |
+| PR19 | 前端中文化与 AI 错误诊断提示 | PR18 |
+
 ## Decisions Made
 | Decision | Rationale |
 |----------|-----------|
@@ -60,7 +67,7 @@ Phase 5 / PR16
 | Web Speech API 语音识别 | 浏览器端免费，不消耗 token |
 | Orb 发光实体交互隐喻 | 视觉辨识度高，科幻感，交互目标明确 |
 | 视频帧抓取而非流式传输 | 大幅降低带宽和 token 消耗 |
-| Gemini 3.1 Flash 主力模型 | 多模态 + 低成本 + 速度快 |
+| qwen-vl-plus 主力模型 | 真机测试已跑通 DashScope OpenAI-compatible 视觉问答，减少中转站不稳定因素 |
 | HTTPS + ngrok 隧道 | iOS Safari 要求 HTTPS 才允许 getUserMedia |
 | vConsole 注入调试 | Windows 无法用 Safari Web Inspector |
 

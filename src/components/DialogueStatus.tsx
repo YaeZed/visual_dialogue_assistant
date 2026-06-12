@@ -19,10 +19,10 @@ interface DialogueStatusProps {
 }
 
 const stateLabel: Record<OrbState, string> = {
-  idle: "Idle",
-  listening: "Listening",
-  thinking: "Thinking",
-  speaking: "Speaking",
+  idle: "待机",
+  listening: "聆听",
+  thinking: "思考",
+  speaking: "说话",
 };
 
 function getToneClass(tone: DialogueTone) {
