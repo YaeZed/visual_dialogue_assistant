@@ -2,6 +2,11 @@ import { motion } from "framer-motion";
 import { Camera, CameraOff, Mic, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCamera, type CameraStatus } from "@/hooks/useCamera";
+import { useMicrophone, type MicrophoneStatus } from "@/hooks/useMicrophone";
+import {
+  useSpeechRecognition,
+  type SpeechRecognitionStatus,
+} from "@/hooks/useSpeechRecognition";
 import { cn } from "@/lib/utils";
 
 function getCameraCopy(status: CameraStatus, errorMessage: string | null) {
@@ -36,12 +41,118 @@ function getCameraCopy(status: CameraStatus, errorMessage: string | null) {
   };
 }
 
+function getMicrophoneCopy(status: MicrophoneStatus, errorMessage: string | null) {
+  if (status === "requesting") {
+    return {
+      message: "Requesting microphone access",
+      action: "Requesting...",
+      tone: "active",
+    };
+  }
+
+  if (status === "ready") {
+    return {
+      message: "Microphone is ready",
+      action: "Microphone ready",
+      tone: "ready",
+    };
+  }
+
+  if (status === "denied" || status === "unavailable" || status === "error") {
+    return {
+      message: errorMessage ?? "Microphone is not available",
+      action: "Retry microphone",
+      tone: "error",
+    };
+  }
+
+  return {
+    message: "Waiting for microphone access",
+    action: "Enable microphone",
+    tone: "idle",
+  };
+}
+
+function getSpeechCopy(status: SpeechRecognitionStatus, errorMessage: string | null) {
+  if (status === "unsupported") {
+    return {
+      message: errorMessage ?? "Speech recognition is not supported in this browser.",
+      action: "Speech unavailable",
+      tone: "error",
+    };
+  }
+
+  if (status === "listening") {
+    return {
+      message: "Listening for your question",
+      action: "Stop listening",
+      tone: "active",
+    };
+  }
+
+  if (status === "stopping") {
+    return {
+      message: "Stopping speech recognition",
+      action: "Stopping...",
+      tone: "active",
+    };
+  }
+
+  if (status === "error") {
+    return {
+      message: errorMessage ?? "Speech recognition failed.",
+      action: "Retry listening",
+      tone: "error",
+    };
+  }
+
+  return {
+    message: "Ready to listen",
+    action: "Start listening",
+    tone: "idle",
+  };
+}
+
+function getStatusDotClass(tone: string) {
+  return cn(
+    "size-2.5 shrink-0 rounded-full shadow-[0_0_16px_currentColor]",
+    tone === "ready" && "bg-emerald-400 text-emerald-400",
+    tone === "active" && "bg-accent text-accent",
+    tone === "error" && "bg-warning text-warning",
+    tone === "idle" && "bg-muted text-muted",
+  );
+}
+
 function App() {
   const { videoRef, status, errorMessage, isReady, startCamera, stopCamera } = useCamera();
+  const {
+    status: microphoneStatus,
+    errorMessage: microphoneError,
+    isReady: isMicrophoneReady,
+    startMicrophone,
+  } = useMicrophone();
+  const {
+    status: speechStatus,
+    errorMessage: speechError,
+    transcript,
+    interimTranscript,
+    isSupported: isSpeechSupported,
+    isListening,
+    startListening,
+    stopListening,
+    clearTranscript,
+  } = useSpeechRecognition();
   const cameraCopy = getCameraCopy(status, errorMessage);
+  const microphoneCopy = getMicrophoneCopy(microphoneStatus, microphoneError);
+  const speechCopy = getSpeechCopy(speechStatus, speechError);
+  const spokenText = interimTranscript || transcript;
   const workflowSteps = [
     { label: "Camera", state: isReady ? "ready" : "next", icon: Camera },
-    { label: "Voice", state: "queued", icon: Mic },
+    {
+      label: "Voice",
+      state: isListening ? "active" : isMicrophoneReady ? "ready" : isReady ? "next" : "queued",
+      icon: Mic,
+    },
     { label: "Vision", state: "queued", icon: Sparkles },
     { label: "Reply", state: "queued", icon: Volume2 },
   ];
@@ -89,15 +200,7 @@ function App() {
             className="absolute bottom-3.5 left-3.5 right-3.5 flex min-h-11 items-center gap-2.5 rounded-card border border-panel-border bg-background/72 px-3.5 text-sm text-slate-300 backdrop-blur-md"
             aria-live="polite"
           >
-            <span
-              className={cn(
-                "size-2.5 shrink-0 rounded-full shadow-[0_0_16px_currentColor]",
-                cameraCopy.tone === "ready" && "bg-emerald-400 text-emerald-400",
-                cameraCopy.tone === "active" && "bg-accent text-accent",
-                cameraCopy.tone === "error" && "bg-warning text-warning",
-                cameraCopy.tone === "idle" && "bg-muted text-muted",
-              )}
-            />
+            <span className={getStatusDotClass(cameraCopy.tone)} />
             <span>{cameraCopy.message}</span>
           </div>
         </motion.div>
@@ -129,6 +232,8 @@ function App() {
                       "border-accent/50 bg-accent-strong/12 text-teal-100",
                     step.state === "ready" &&
                       "border-emerald-400/50 bg-emerald-500/12 text-emerald-100",
+                    step.state === "active" &&
+                      "border-accent/70 bg-accent-strong/18 text-teal-50",
                   )}
                   key={step.label}
                 >
@@ -161,6 +266,48 @@ function App() {
               </Button>
             )}
           </div>
+
+          <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
+            <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
+              <span className={getStatusDotClass(isListening ? "active" : microphoneCopy.tone)} />
+              <span>{isMicrophoneReady ? speechCopy.message : microphoneCopy.message}</span>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+              <Button
+                disabled={microphoneStatus === "requesting" || isMicrophoneReady}
+                onClick={startMicrophone}
+                type="button"
+                variant="secondary"
+              >
+                <Mic aria-hidden="true" className="size-5" />
+                {microphoneCopy.action}
+              </Button>
+              <Button
+                disabled={!isMicrophoneReady || !isSpeechSupported || speechStatus === "stopping"}
+                onClick={isListening ? stopListening : startListening}
+                type="button"
+                variant={isListening ? "default" : "secondary"}
+              >
+                <Volume2 aria-hidden="true" className="size-5" />
+                {speechCopy.action}
+              </Button>
+            </div>
+
+            <div className="min-h-16 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
+              {spokenText ? (
+                <p className="m-0">{spokenText}</p>
+              ) : (
+                <p className="m-0 text-muted">Recognized speech will appear here.</p>
+              )}
+            </div>
+
+            {transcript && (
+              <Button onClick={clearTranscript} size="sm" type="button" variant="ghost">
+                Clear transcript
+              </Button>
+            )}
+          </section>
         </motion.div>
       </section>
     </main>

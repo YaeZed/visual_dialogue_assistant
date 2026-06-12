@@ -43,6 +43,7 @@
 | Vite 6 CLI 不接受 `--https` | 使用 `@vitejs/plugin-basic-ssl` 并通过环境变量 `VITE_DEV_HTTPS=true` 在 serve 模式开启 HTTPS |
 | 当前机器未安装 ngrok | 已提供 `scripts/start-ngrok.ps1`，运行时会提示安装并登录 ngrok |
 | 桌面环境无可用摄像头/权限确认能力 | PR4 通过浏览器点击验证失败路径；真实视频画面需手机 Safari + HTTPS 隧道验证 |
+| 桌面环境无法完成真实语音识别链路验证 | PR5 通过浏览器验证控件、失败路径和移动布局；真实语音识别需手机 Safari 用户手势触发验证 |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl
