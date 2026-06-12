@@ -10,7 +10,8 @@
 - PR5: 麦克风与语音识别（权限获取、Web Speech API、实时 transcript）
 - PR6: 视频帧抓取（canvas 截图、JPEG 压缩、抓帧元信息）
 - PR7: API 层（OpenAI-compatible 多模态请求封装）
-- PR8: 多模态对话开发中
+- PR8: 多模态对话（图片帧 + 文字 -> AI 回应）
+- PR9: 当前页面内存态多轮上下文开发中
 
 ## 本地开发
 ```bash

@@ -1,5 +1,6 @@
 const DEFAULT_API_BASE_URL = "https://api.icodeeasy.cc";
 const DEFAULT_MODEL = "gemini-3.1-flash";
+const MAX_CONTEXT_TURNS = 4;
 
 type ChatRole = "system" | "user" | "assistant";
 
@@ -45,6 +46,7 @@ export interface VisionChatRequest {
   apiKey: string;
   prompt: string;
   imageDataUrl: string;
+  history?: ConversationContextTurn[];
   baseUrl?: string;
   model?: string;
   maxTokens?: number;
@@ -54,6 +56,11 @@ export interface VisionChatRequest {
 export interface VisionChatResult {
   content: string;
   model: string;
+}
+
+export interface ConversationContextTurn {
+  question: string;
+  answer: string;
 }
 
 export class AiApiError extends Error {
@@ -82,13 +89,38 @@ function getChatCompletionsUrl(baseUrl: string) {
     : `${normalizedBaseUrl}/v1/chat/completions`;
 }
 
-function buildVisionMessages(prompt: string, imageDataUrl: string): ChatMessage[] {
+function clampText(text: string, maxLength: number) {
+  const normalizedText = text.replace(/\s+/g, " ").trim();
+  return normalizedText.length > maxLength
+    ? `${normalizedText.slice(0, maxLength - 1)}…`
+    : normalizedText;
+}
+
+function buildContextMessages(history: ConversationContextTurn[] = []): ChatMessage[] {
+  return history.slice(-MAX_CONTEXT_TURNS).flatMap((turn) => [
+    {
+      role: "user" as const,
+      content: clampText(turn.question, 700),
+    },
+    {
+      role: "assistant" as const,
+      content: clampText(turn.answer, 900),
+    },
+  ]);
+}
+
+function buildVisionMessages(
+  prompt: string,
+  imageDataUrl: string,
+  history: ConversationContextTurn[] = [],
+): ChatMessage[] {
   return [
     {
       role: "system",
       content:
-        "You are a concise visual dialogue assistant. Answer in the user's language and focus on what is visible in the image.",
+        "You are a concise visual dialogue assistant. Answer in the user's language. Use the current image as the source of truth, and use prior text context only when it helps resolve the user's intent.",
     },
+    ...buildContextMessages(history),
     {
       role: "user",
       content: [
@@ -127,6 +159,7 @@ export async function createVisionChatCompletion({
   apiKey,
   prompt,
   imageDataUrl,
+  history,
   baseUrl = getAiDefaults().baseUrl,
   model = getAiDefaults().model,
   maxTokens = 300,
@@ -146,7 +179,7 @@ export async function createVisionChatCompletion({
 
   const body: ChatCompletionRequestBody = {
     model,
-    messages: buildVisionMessages(prompt.trim(), imageDataUrl),
+    messages: buildVisionMessages(prompt.trim(), imageDataUrl, history),
     temperature: 0.3,
     max_completion_tokens: maxTokens,
   };
@@ -177,4 +210,3 @@ export async function createVisionChatCompletion({
     model,
   };
 }
-

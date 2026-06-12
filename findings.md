@@ -46,6 +46,7 @@
 | 桌面环境无法完成真实语音识别链路验证 | PR5 通过浏览器验证控件、失败路径和移动布局；真实语音识别需手机 Safari 用户手势触发验证 |
 | 没有真实摄像头时无法验证 canvas 抓取真实画面 | PR6 通过 build 和 UI 禁用态验证；真实 JPEG 帧大小与画面需手机 Safari 验证 |
 | OpenAI-compatible 视觉输入格式支持 `content` 数组中的 `image_url`，且图片可用 base64 data URL | PR7 API 层按该格式构造多模态 Chat Completions 请求；来源：https://developers.openai.com/api/docs/guides/images-vision |
+| 多轮上下文不应重复上传历史图片 | PR9 只传最近 4 轮文本问答；当前图片仍以本次抓帧为准，降低 token/带宽成本 |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl
