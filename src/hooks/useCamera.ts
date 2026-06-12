@@ -22,27 +22,27 @@ function getCameraError(error: unknown): CameraState {
   if (!(error instanceof DOMException)) {
     return {
       status: "error",
-      errorMessage: "Camera failed to start. Check browser permissions and retry.",
+      errorMessage: "摄像头启动失败。请检查浏览器权限后重试。",
     };
   }
 
   if (error.name === "NotAllowedError" || error.name === "SecurityError") {
     return {
       status: "denied",
-      errorMessage: "Camera permission was blocked. Enable camera access in Safari settings and retry.",
+      errorMessage: "摄像头权限被阻止。请在 Safari 设置中允许摄像头访问后重试。",
     };
   }
 
   if (error.name === "NotFoundError" || error.name === "OverconstrainedError") {
     return {
       status: "unavailable",
-      errorMessage: "No available camera was found on this device.",
+      errorMessage: "当前设备没有可用摄像头。",
     };
   }
 
   return {
     status: "error",
-    errorMessage: "Camera failed to start. Refresh the page or retry after closing other camera apps.",
+    errorMessage: "摄像头启动失败。请刷新页面，或关闭其他正在使用摄像头的应用后重试。",
   };
 }
 
@@ -66,7 +66,7 @@ export function useCamera() {
     if (!navigator.mediaDevices?.getUserMedia) {
       setCameraState({
         status: "unavailable",
-        errorMessage: "This browser does not support camera access.",
+        errorMessage: "当前浏览器不支持摄像头访问。",
       });
       return;
     }

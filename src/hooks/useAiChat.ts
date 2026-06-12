@@ -39,10 +39,14 @@ function getAiErrorMessage(error: unknown) {
   }
 
   if (error instanceof DOMException && error.name === "AbortError") {
-    return "AI request was cancelled.";
+    return "AI 请求已取消。";
   }
 
-  return "AI request failed. Check the network and retry.";
+  if (error instanceof TypeError) {
+    return "AI 请求没有收到响应。请检查网络、接口跨域限制或 API 地址。";
+  }
+
+  return "AI 请求失败。请检查网络后重试。";
 }
 
 export function useAiChat() {

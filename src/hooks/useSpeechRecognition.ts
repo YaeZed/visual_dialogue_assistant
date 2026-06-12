@@ -23,27 +23,27 @@ const initialState: SpeechRecognitionState = {
   status: SpeechRecognitionApi ? "idle" : "unsupported",
   transcript: "",
   interimTranscript: "",
-  errorMessage: SpeechRecognitionApi ? null : "Speech recognition is not supported in this browser.",
+  errorMessage: SpeechRecognitionApi ? null : "当前浏览器不支持语音识别。",
 };
 
 function getSpeechErrorMessage(error: string) {
   if (error === "not-allowed" || error === "service-not-allowed") {
-    return "Speech recognition was blocked. Enable microphone and speech recognition permissions.";
+    return "语音识别被阻止。请允许麦克风和语音识别权限后重试。";
   }
 
   if (error === "no-speech") {
-    return "No speech was detected. Try again closer to the microphone.";
+    return "没有检测到语音。请靠近麦克风后重试。";
   }
 
   if (error === "audio-capture") {
-    return "No microphone audio was captured. Check microphone access and retry.";
+    return "没有采集到麦克风声音。请检查麦克风权限后重试。";
   }
 
   if (error === "network") {
-    return "Speech recognition network service failed. Check the connection and retry.";
+    return "语音识别网络服务失败。请检查网络后重试。";
   }
 
-  return "Speech recognition stopped unexpectedly. Try again.";
+  return "语音识别意外停止。请重试。";
 }
 
 export function useSpeechRecognition() {
@@ -127,7 +127,7 @@ export function useSpeechRecognition() {
       setSpeechState({
         ...initialState,
         status: "unsupported",
-        errorMessage: "Speech recognition is not supported in this browser.",
+        errorMessage: "当前浏览器不支持语音识别。",
       });
       return;
     }
@@ -174,4 +174,3 @@ export function useSpeechRecognition() {
     clearTranscript,
   };
 }
-

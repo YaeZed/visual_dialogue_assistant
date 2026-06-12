@@ -22,7 +22,7 @@ function getMicrophoneError(error: unknown): MicrophoneState {
   if (!(error instanceof DOMException)) {
     return {
       status: "error",
-      errorMessage: "Microphone failed to start. Check browser permissions and retry.",
+      errorMessage: "麦克风启动失败。请检查浏览器权限后重试。",
     };
   }
 
@@ -30,20 +30,20 @@ function getMicrophoneError(error: unknown): MicrophoneState {
     return {
       status: "denied",
       errorMessage:
-        "Microphone permission was blocked. Enable microphone access in Safari settings and retry.",
+        "麦克风权限被阻止。请在 Safari 设置中允许麦克风访问后重试。",
     };
   }
 
   if (error.name === "NotFoundError") {
     return {
       status: "unavailable",
-      errorMessage: "No available microphone was found on this device.",
+      errorMessage: "当前设备没有可用麦克风。",
     };
   }
 
   return {
     status: "error",
-    errorMessage: "Microphone failed to start. Refresh the page or close other recording apps.",
+    errorMessage: "麦克风启动失败。请刷新页面，或关闭其他录音应用后重试。",
   };
 }
 
@@ -61,7 +61,7 @@ export function useMicrophone() {
     if (!navigator.mediaDevices?.getUserMedia) {
       setMicrophoneState({
         status: "unavailable",
-        errorMessage: "This browser does not support microphone access.",
+        errorMessage: "当前浏览器不支持麦克风访问。",
       });
       return;
     }
@@ -100,4 +100,3 @@ export function useMicrophone() {
     stopMicrophone,
   };
 }
-

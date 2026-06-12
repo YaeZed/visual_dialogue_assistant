@@ -37,7 +37,7 @@ function canvasToJpegBlob(canvas: HTMLCanvasElement, quality: number) {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error("Canvas did not produce an image."));
+          reject(new Error("画布没有生成图片。"));
           return;
         }
 
@@ -57,7 +57,7 @@ export function useFrameCapture() {
       setFrameState({
         status: "error",
         frame: null,
-        errorMessage: "Camera frame is not ready yet. Start the camera and retry.",
+        errorMessage: "摄像头画面还没准备好。请先开启摄像头后重试。",
       });
       return null;
     }
@@ -69,7 +69,7 @@ export function useFrameCapture() {
       setFrameState({
         status: "error",
         frame: null,
-        errorMessage: "Camera frame has no dimensions yet. Wait a moment and retry.",
+        errorMessage: "摄像头画面尺寸还没准备好。请稍等片刻后重试。",
       });
       return null;
     }
@@ -84,7 +84,7 @@ export function useFrameCapture() {
       const context = canvas.getContext("2d");
 
       if (!context) {
-        throw new Error("Canvas rendering context is unavailable.");
+        throw new Error("画布渲染上下文不可用。");
       }
 
       context.drawImage(video, 0, 0, width, height);
@@ -106,7 +106,7 @@ export function useFrameCapture() {
       setFrameState({
         status: "error",
         frame: null,
-        errorMessage: "Frame capture failed. Refresh the camera and retry.",
+        errorMessage: "抓取画面失败。请刷新摄像头后重试。",
       });
       return null;
     }
@@ -120,4 +120,3 @@ export function useFrameCapture() {
     clearFrame,
   };
 }
-

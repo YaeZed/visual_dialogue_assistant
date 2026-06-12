@@ -140,11 +140,24 @@ function buildVisionMessages(
 }
 
 async function parseErrorResponse(response: Response) {
+  const statusHint =
+    response.status === 400
+      ? "请求格式或模型参数不被接口接受。"
+      : response.status === 401
+        ? "API 密钥无效或已过期。"
+        : response.status === 403
+          ? "API 密钥没有权限，或当前模型未开通。"
+          : response.status === 429
+            ? "请求过于频繁或额度不足。"
+            : response.status >= 500
+              ? "模型服务暂时不可用。"
+              : "接口返回异常。";
+
   try {
     const body = (await response.json()) as ChatCompletionResponse;
-    return body.error?.message ?? `AI request failed with status ${response.status}.`;
+    return `AI 请求失败（HTTP ${response.status}）：${body.error?.message ?? statusHint}`;
   } catch {
-    return `AI request failed with status ${response.status}.`;
+    return `AI 请求失败（HTTP ${response.status}）：${statusHint}`;
   }
 }
 
@@ -166,15 +179,15 @@ export async function createVisionChatCompletion({
   signal,
 }: VisionChatRequest): Promise<VisionChatResult> {
   if (!apiKey.trim()) {
-    throw new AiApiError("Missing API key. Enter a key for this session before asking AI.");
+    throw new AiApiError("缺少 API 密钥。请先输入本次会话要使用的密钥。");
   }
 
   if (!prompt.trim()) {
-    throw new AiApiError("Missing question. Speak or type a question before asking AI.");
+    throw new AiApiError("缺少问题。请先语音输入或准备一个视觉问题。");
   }
 
   if (!imageDataUrl.startsWith("data:image/")) {
-    throw new AiApiError("Missing image frame. Capture a camera frame before asking AI.");
+    throw new AiApiError("缺少画面帧。请先抓取一帧摄像头画面。");
   }
 
   const body: ChatCompletionRequestBody = {
@@ -202,7 +215,7 @@ export async function createVisionChatCompletion({
   const content = result.choices?.[0]?.message?.content?.trim();
 
   if (!content) {
-    throw new AiApiError("AI response was empty. Retry with a clearer image or question.");
+    throw new AiApiError("AI 返回为空。请换一个更清晰的画面或问题后重试。");
   }
 
   return {
