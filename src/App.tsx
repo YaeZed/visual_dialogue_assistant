@@ -12,6 +12,8 @@ import {
 } from "@/hooks/useSpeechRecognition";
 import { cn } from "@/lib/utils";
 
+const FALLBACK_VISUAL_QUESTION = "请描述当前画面，并指出值得我注意的内容。";
+
 function getCameraCopy(status: CameraStatus, errorMessage: string | null) {
   if (status === "requesting") {
     return {
@@ -128,6 +130,7 @@ function getStatusDotClass(tone: string) {
 
 function App() {
   const [apiKey, setApiKey] = useState("");
+  const [fallbackQuestion, setFallbackQuestion] = useState("");
   const {
     videoRef,
     status,
@@ -178,12 +181,13 @@ function App() {
   const speechCopy = getSpeechCopy(speechStatus, speechError);
   const spokenText = interimTranscript || transcript;
   const questionText = useMemo(
-    () => (transcript.trim() || interimTranscript.trim()).trim(),
-    [interimTranscript, transcript],
+    () => (transcript.trim() || interimTranscript.trim() || fallbackQuestion).trim(),
+    [fallbackQuestion, interimTranscript, transcript],
   );
   const hasQuestion = Boolean(questionText);
   const canCaptureFrame = isReady && frameStatus !== "capturing";
   const canAskAi = Boolean(apiKey.trim() && questionText && frame) && !isThinking;
+  const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
   const workflowSteps = [
     { label: "Camera", state: isReady ? "ready" : "next", icon: Camera },
     {
@@ -202,6 +206,30 @@ function App() {
       icon: Volume2,
     },
   ];
+  const askAiWithFrame = (imageDataUrl: string, prompt: string) =>
+    askVisionQuestion({
+      apiKey,
+      prompt,
+      imageDataUrl,
+    });
+  const handleFallbackVisualQuestion = async () => {
+    if (!canCaptureFrame || isThinking) {
+      return;
+    }
+
+    const nextFrame = await captureFrame(getVideoElement());
+
+    if (!nextFrame) {
+      return;
+    }
+
+    const nextQuestion = questionText || FALLBACK_VISUAL_QUESTION;
+    setFallbackQuestion(nextQuestion);
+
+    if (apiKey.trim()) {
+      await askAiWithFrame(nextFrame.dataUrl, nextQuestion);
+    }
+  };
 
   return (
     <main className="safe-page min-h-svh bg-[radial-gradient(circle_at_50%_20%,rgba(34,197,94,0.14),transparent_30%),linear-gradient(180deg,#0c1019_0%,#06070b_100%)] px-[18px] md:p-7">
@@ -210,9 +238,22 @@ function App() {
         aria-label="AI 视觉对话助手"
       >
         <motion.div
-          className="vision-grid relative grid min-h-[420px] overflow-hidden rounded-card border border-panel-border shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)] md:min-h-0"
+          className={cn(
+            "vision-grid relative grid min-h-[420px] overflow-hidden rounded-card border border-panel-border shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)] md:min-h-0",
+            canCaptureFrame && "cursor-pointer",
+          )}
           initial={{ opacity: 0, scale: 0.985 }}
           animate={{ opacity: 1, scale: 1 }}
+          aria-label={canCaptureFrame ? "Capture current frame and ask a visual fallback question" : undefined}
+          onClick={handleFallbackVisualQuestion}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              void handleFallbackVisualQuestion();
+            }
+          }}
+          role={canCaptureFrame ? "button" : undefined}
+          tabIndex={canCaptureFrame ? 0 : -1}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
           <video
@@ -247,7 +288,9 @@ function App() {
             aria-live="polite"
           >
             <span className={getStatusDotClass(cameraCopy.tone)} />
-            <span>{cameraCopy.message}</span>
+            <span>
+              {isReady && !isThinking ? "Camera is live. Tap the frame for visual fallback." : cameraCopy.message}
+            </span>
           </div>
         </motion.div>
 
@@ -343,14 +386,24 @@ function App() {
             <div className="min-h-16 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
               {spokenText ? (
                 <p className="m-0">{spokenText}</p>
+              ) : fallbackQuestionText ? (
+                <p className="m-0">{fallbackQuestionText}</p>
               ) : (
                 <p className="m-0 text-muted">Recognized speech will appear here.</p>
               )}
             </div>
 
-            {transcript && (
-              <Button onClick={clearTranscript} size="sm" type="button" variant="ghost">
-                Clear transcript
+            {(transcript || fallbackQuestion) && (
+              <Button
+                onClick={() => {
+                  clearTranscript();
+                  setFallbackQuestion("");
+                }}
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                Clear question
               </Button>
             )}
           </section>
@@ -434,11 +487,7 @@ function App() {
                 disabled={!canAskAi}
                 onClick={() =>
                   frame &&
-                  askVisionQuestion({
-                    apiKey,
-                    prompt: questionText,
-                    imageDataUrl: frame.dataUrl,
-                  })
+                  askAiWithFrame(frame.dataUrl, questionText)
                 }
                 type="button"
               >
