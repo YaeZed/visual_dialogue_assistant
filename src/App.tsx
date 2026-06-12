@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Camera, CameraOff, Mic, Sparkles, Volume2 } from "lucide-react";
+import { Camera, CameraOff, Image, Mic, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCamera, type CameraStatus } from "@/hooks/useCamera";
+import { useFrameCapture } from "@/hooks/useFrameCapture";
 import { useMicrophone, type MicrophoneStatus } from "@/hooks/useMicrophone";
 import {
   useSpeechRecognition,
@@ -124,7 +125,22 @@ function getStatusDotClass(tone: string) {
 }
 
 function App() {
-  const { videoRef, status, errorMessage, isReady, startCamera, stopCamera } = useCamera();
+  const {
+    videoRef,
+    status,
+    errorMessage,
+    isReady,
+    startCamera,
+    stopCamera,
+    getVideoElement,
+  } = useCamera();
+  const {
+    status: frameStatus,
+    frame,
+    errorMessage: frameError,
+    captureFrame,
+    clearFrame,
+  } = useFrameCapture();
   const {
     status: microphoneStatus,
     errorMessage: microphoneError,
@@ -146,6 +162,8 @@ function App() {
   const microphoneCopy = getMicrophoneCopy(microphoneStatus, microphoneError);
   const speechCopy = getSpeechCopy(speechStatus, speechError);
   const spokenText = interimTranscript || transcript;
+  const hasQuestion = Boolean(transcript.trim() || interimTranscript.trim());
+  const canCaptureFrame = isReady && frameStatus !== "capturing";
   const workflowSteps = [
     { label: "Camera", state: isReady ? "ready" : "next", icon: Camera },
     {
@@ -153,7 +171,11 @@ function App() {
       state: isListening ? "active" : isMicrophoneReady ? "ready" : isReady ? "next" : "queued",
       icon: Mic,
     },
-    { label: "Vision", state: "queued", icon: Sparkles },
+    {
+      label: "Vision",
+      state: frame ? "ready" : hasQuestion && isReady ? "next" : "queued",
+      icon: Sparkles,
+    },
     { label: "Reply", state: "queued", icon: Volume2 },
   ];
 
@@ -306,6 +328,47 @@ function App() {
               <Button onClick={clearTranscript} size="sm" type="button" variant="ghost">
                 Clear transcript
               </Button>
+            )}
+          </section>
+
+          <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
+            <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
+              <span
+                className={getStatusDotClass(
+                  frameStatus === "capturing" ? "active" : frame ? "ready" : frameError ? "error" : "idle",
+                )}
+              />
+              <span>
+                {frameStatus === "capturing"
+                  ? "Capturing current frame"
+                  : frame
+                    ? `Frame ready: ${frame.width}x${frame.height}, ${frame.sizeKb} KB`
+                    : frameError ?? "Capture one frame when the question is ready."}
+              </span>
+            </div>
+
+            <Button
+              disabled={!canCaptureFrame}
+              onClick={() => captureFrame(getVideoElement())}
+              type="button"
+              variant="secondary"
+            >
+              <Image aria-hidden="true" className="size-5" />
+              {frameStatus === "capturing" ? "Capturing..." : "Capture frame"}
+            </Button>
+
+            {frame && (
+              <div className="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-card border border-panel-border bg-background/50 p-2 text-xs text-slate-300">
+                <img
+                  alt="Captured frame preview"
+                  className="h-12 w-16 rounded-card object-cover"
+                  src={frame.dataUrl}
+                />
+                <span>{new Date(frame.capturedAt).toLocaleTimeString()}</span>
+                <Button onClick={clearFrame} size="sm" type="button" variant="ghost">
+                  Clear
+                </Button>
+              </div>
             )}
           </section>
         </motion.div>

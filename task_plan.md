@@ -85,3 +85,5 @@ Phase 1
 - 2026-06-12: PR4 摄像头模块已实现：`useCamera`、后置摄像头约束、全屏视频预览、失败/重试反馈；build 和浏览器移动视口检查通过。
 - 2026-06-12: PR4 已提交，commit `fc74e08 Add camera preview module`。进入 PR5 麦克风与语音识别模块。
 - 2026-06-12: PR5 麦克风与语音识别模块已实现：`useMicrophone`、`useSpeechRecognition`、Web Speech API 类型、实时 transcript UI；build 和浏览器失败路径检查通过。
+- 2026-06-12: PR5 已提交，commit `6f62a43 Add speech input module`。进入 PR6 视频帧抓取模块。
+- 2026-06-12: PR6 视频帧抓取模块已实现：`useFrameCapture`、canvas JPEG 压缩、data URL 预览、抓帧元信息；build 和浏览器布局检查通过。
