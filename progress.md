@@ -33,6 +33,12 @@
   - 创建 `components.json`、`src/lib/utils.ts`、`src/components/ui/button.tsx`
   - 将首页从手写 CSS 类迁移为 Tailwind 工具类与 Motion 进场动效
   - 顺序安装 PR2 依赖并通过 build
+  - 提交 PR2：`4def3a0 Add UI foundation`
+  - 开始 PR3：接入 `@vitejs/plugin-basic-ssl`、vConsole、`.env.example`、ngrok 启动脚本
+  - 修复 Vite 6 不支持 CLI `--https` 的问题，改为 `VITE_DEV_HTTPS=true` 控制 basic SSL 插件
+  - 验证 `npm run build` 通过
+  - 验证 `npm run dev:https` 可启动 HTTPS dev server，日志显示 `https://127.0.0.1:5173/`
+  - 验证 `npm run tunnel` 在未安装 ngrok 时给出明确错误
 - Files created/modified:
   - CODEX.md
   - .gitignore
@@ -51,6 +57,8 @@
   - components.json
   - src/lib/utils.ts
   - src/components/ui/button.tsx
+  - .env.example
+  - scripts/start-ngrok.ps1
 
 ### Phase 2: 媒体采集与语音识别
 - **Status:** pending
@@ -91,17 +99,23 @@
 | Git commit | `git commit -m "Initialize Vite React project"` | local commit created | `29fdbe0` | passed |
 | UI dependency install | `C:\nvm4w\nodejs\npm.cmd install ...` | installs Tailwind/shadcn/motion dependencies | 0 vulnerabilities | passed |
 | UI build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.25s | passed |
+| Git commit | `git commit -m "Add UI foundation"` | local commit created | `4def3a0` | passed |
+| Dev environment build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.23s | passed |
+| HTTPS dev server | `npm run dev:https` | local HTTPS server starts | Vite ready at `https://127.0.0.1:5173/` | passed |
+| Tunnel script without ngrok | `npm run tunnel` | clear actionable error | reports ngrok not installed or not in PATH | passed |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
 |-----------|-------|---------|------------|
 | 2026-06-12 | `node --version` 拒绝访问；`npm` 不在 PATH | 尝试验证本机 JS 工具链 | 提权后确认 Node v20.19.5 可用，使用 `C:\nvm4w\nodejs\npm.cmd` 完成安装和 build |
 | 2026-06-12 | PowerShell 不支持 `&&`；并行 `npm install` 导致 lockfile 结果互相覆盖 | 第一次安装 PR2 依赖 | 不再并行 npm install，顺序补装依赖后 build 通过 |
+| 2026-06-12 | Vite 6 CLI 报 `Unknown option --https` | 第一次验证 `dev:https` | 改为通过 `VITE_DEV_HTTPS=true` 在 Vite config 中启用 basic SSL |
+| 2026-06-12 | `Invoke-WebRequest -SkipCertificateCheck` 在当前 PowerShell 不可用 | HTTPS 请求验证 | 改为读取 dev server 日志确认 HTTPS 地址启动成功 |
 
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 1 进行中，PR1 已提交；PR2 UI 基础已实现并通过 build，待提交 |
+| Where am I? | Phase 1 进行中，PR1/PR2 已提交；PR3 开发环境已实现并通过验证，待提交 |
 | Where am I going? | Phase 1 → 6，共 16 个 PR |
 | What's the goal? | AI 视觉对话助手 MVP，Orb 交互隐喻，手机 Safari 可演示 |
 | What have I learned? | iOS Safari HTTPS 要求、Web Speech API 兼容性、模型选型 |

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "dev:https": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$env:VITE_DEV_HTTPS='true'; vite --host 0.0.0.0\"",
+    "tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-ngrok.ps1",
     "build": "tsc --build && vite build",
     "preview": "vite preview --host 127.0.0.1"
   },
@@ -20,11 +22,14 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^25.9.3",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^4.3.4",
     "tailwindcss": "^4.3.0",
     "typescript": "~5.7.2",
+    "vconsole": "^3.15.1",
     "vite": "^6.0.7"
   }
 }
