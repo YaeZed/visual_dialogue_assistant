@@ -230,3 +230,27 @@
 | Context empty state | Browser DOM snapshot | shows 0 turns and no clear action | `Context: 0 turns in this page`, no `Clear context` | passed |
 | Context mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
 | Storage persistence check | Browser evaluate storage availability | no app persistence used | storage objects unavailable in test scope; code contains no local/session storage writes | partial |
+
+### PR10: 截图提问兜底模式
+- **Status:** in_progress
+- Actions taken:
+  - 提交并推送 PR9：`2f6dece Add in-memory conversation context`
+  - 增加默认视觉问题：`请描述当前画面，并指出值得我注意的内容。`
+  - 摄像头可抓帧时，预览画面变为可点击/键盘触发的兜底入口
+  - 点击画面后抓取当前帧；没有语音问题时使用默认视觉问题
+  - 如果已填写 API key，点击画面后直接发起 AI 请求；否则准备好帧和问题，等待用户填写 key 后手动 Ask AI
+  - 验证 `npm run build` 通过
+  - 浏览器验证无摄像头状态下不会暴露 fallback 画面按钮
+  - 移动视口 390x844 检查通过，无横向溢出
+- Files created/modified:
+  - src/App.tsx
+  - README.md
+  - task_plan.md
+  - progress.md
+
+## Test Results: PR10
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Fallback build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.58s | passed |
+| Fallback disabled state | Browser DOM snapshot without camera | no clickable fallback frame before camera is ready | fallback role button count 0 | passed |
+| Fallback mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |

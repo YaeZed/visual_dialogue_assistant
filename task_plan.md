@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 3 / PR7
+Phase 3 / PR10
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -95,3 +95,5 @@ Phase 3 / PR7
 - 2026-06-12: PR8 已提交，commit `6d1eb42 Connect multimodal AI request`。进入 PR9 多轮上下文管理。
 - 2026-06-12: PR9 开发中：上下文仅保存在当前 React state，最多把最近 4 轮文本问答带入下一次请求，不持久化、不重复上传历史图片。
 - 2026-06-12: PR9 当前页面多轮上下文已实现：最近 4 轮文本上下文、当前页面 turns、上下文清理；build 和浏览器布局检查通过。
+- 2026-06-12: PR9 已提交并推送，commit `2f6dece Add in-memory conversation context`。
+- 2026-06-12: PR10 截图提问兜底模式已实现：摄像头可用时点击画面抓帧并准备默认视觉问题；有 API key 时直接发起 AI 请求。
