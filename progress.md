@@ -307,3 +307,26 @@
 | PR12 browser reload | In-app browser reload `http://127.0.0.1:5173/` | App renders without Vite overlay | `hasViteOverlay=false`, `hasMain=true` | passed |
 | PR12 mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
 | PR12 build | `npm run build` | TypeScript and Vite build pass | `node.exe` access denied in current sandbox | blocked |
+
+### PR13: Orb 与对话系统状态整合
+- **Status:** in_progress
+- Actions taken:
+  - 新增 `DialogueStatus` 组件，展示当前对话阶段、状态摘要和 Question / Frame / Reply 三个链路信号
+  - 在相机预览右上角将 Orb 与状态层组合为一个稳定状态锚点
+  - 从现有语音、抓帧、AI、TTS 状态推导统一 title/detail/tone，避免新增手动输入和后端复杂度
+  - 浏览器 dev server 重新加载通过，无 Vite error overlay
+  - 移动视口 390x844 检查通过，无横向溢出
+- Files created/modified:
+  - src/components/DialogueStatus.tsx
+  - src/App.tsx
+  - README.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR13
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| PR13 browser reload | In-app browser reload `http://127.0.0.1:5173/` | App renders without Vite overlay | `hasOverlay=false`, `hasMain=true` | passed |
+| PR13 mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
+| PR13 build | `npm run build` | TypeScript and Vite build pass | `node.exe` access denied in current sandbox | blocked |
