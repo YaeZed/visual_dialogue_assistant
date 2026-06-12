@@ -1,6 +1,8 @@
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, CameraOff, Image, Mic, Sparkles, Volume2 } from "lucide-react";
+import { Camera, CameraOff, Image, KeyRound, Mic, Send, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAiChat } from "@/hooks/useAiChat";
 import { useCamera, type CameraStatus } from "@/hooks/useCamera";
 import { useFrameCapture } from "@/hooks/useFrameCapture";
 import { useMicrophone, type MicrophoneStatus } from "@/hooks/useMicrophone";
@@ -125,6 +127,7 @@ function getStatusDotClass(tone: string) {
 }
 
 function App() {
+  const [apiKey, setApiKey] = useState("");
   const {
     videoRef,
     status,
@@ -141,6 +144,16 @@ function App() {
     captureFrame,
     clearFrame,
   } = useFrameCapture();
+  const {
+    status: aiStatus,
+    answer,
+    model,
+    errorMessage: aiError,
+    isThinking,
+    askVisionQuestion,
+    cancelRequest,
+    clearAnswer,
+  } = useAiChat();
   const {
     status: microphoneStatus,
     errorMessage: microphoneError,
@@ -162,8 +175,13 @@ function App() {
   const microphoneCopy = getMicrophoneCopy(microphoneStatus, microphoneError);
   const speechCopy = getSpeechCopy(speechStatus, speechError);
   const spokenText = interimTranscript || transcript;
-  const hasQuestion = Boolean(transcript.trim() || interimTranscript.trim());
+  const questionText = useMemo(
+    () => (transcript.trim() || interimTranscript.trim()).trim(),
+    [interimTranscript, transcript],
+  );
+  const hasQuestion = Boolean(questionText);
   const canCaptureFrame = isReady && frameStatus !== "capturing";
+  const canAskAi = Boolean(apiKey.trim() && questionText && frame) && !isThinking;
   const workflowSteps = [
     { label: "Camera", state: isReady ? "ready" : "next", icon: Camera },
     {
@@ -176,7 +194,11 @@ function App() {
       state: frame ? "ready" : hasQuestion && isReady ? "next" : "queued",
       icon: Sparkles,
     },
-    { label: "Reply", state: "queued", icon: Volume2 },
+    {
+      label: "Reply",
+      state: isThinking ? "active" : answer ? "ready" : frame && hasQuestion ? "next" : "queued",
+      icon: Volume2,
+    },
   ];
 
   return (
@@ -370,6 +392,77 @@ function App() {
                 </Button>
               </div>
             )}
+          </section>
+
+          <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
+            <label className="grid gap-1.5 text-sm text-slate-300">
+              <span className="flex items-center gap-2 font-bold text-slate-200">
+                <KeyRound aria-hidden="true" className="size-4" />
+                API key
+              </span>
+              <input
+                autoComplete="off"
+                className="min-h-11 rounded-card border border-panel-border bg-background/70 px-3 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-accent"
+                onChange={(event) => setApiKey(event.target.value)}
+                placeholder="sk-..."
+                type="password"
+                value={apiKey}
+              />
+            </label>
+
+            <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
+              <span
+                className={getStatusDotClass(
+                  isThinking ? "active" : answer ? "ready" : aiError ? "error" : "idle",
+                )}
+              />
+              <span>
+                {isThinking
+                  ? "Thinking with the captured frame"
+                  : answer
+                    ? model
+                      ? `AI response ready via ${model}`
+                      : "AI response ready"
+                    : aiError ?? "Ready after API key, question, and frame are available."}
+              </span>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+              <Button
+                disabled={!canAskAi}
+                onClick={() =>
+                  frame &&
+                  askVisionQuestion({
+                    apiKey,
+                    prompt: questionText,
+                    imageDataUrl: frame.dataUrl,
+                  })
+                }
+                type="button"
+              >
+                <Send aria-hidden="true" className="size-5" />
+                {isThinking ? "Asking..." : "Ask AI"}
+              </Button>
+              {isThinking ? (
+                <Button onClick={cancelRequest} type="button" variant="secondary">
+                  Cancel
+                </Button>
+              ) : (
+                answer && (
+                  <Button onClick={clearAnswer} type="button" variant="ghost">
+                    Clear answer
+                  </Button>
+                )
+              )}
+            </div>
+
+            <div className="min-h-20 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
+              {answer ? (
+                <p className="m-0 leading-relaxed">{answer}</p>
+              ) : (
+                <p className="m-0 text-muted">AI answer will appear here.</p>
+              )}
+            </div>
           </section>
         </motion.div>
       </section>

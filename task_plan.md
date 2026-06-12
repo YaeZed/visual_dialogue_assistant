@@ -89,3 +89,6 @@ Phase 3 / PR7
 - 2026-06-12: PR6 视频帧抓取模块已实现：`useFrameCapture`、canvas JPEG 压缩、data URL 预览、抓帧元信息；build 和浏览器布局检查通过。
 - 2026-06-12: PR6 已提交，commit `7558827 Add frame capture module`。Phase 2 完成，进入 Phase 3 / PR7 API 层。
 - 2026-06-12: PR7 API 层开发中：OpenAI-compatible Chat Completions 封装，图片输入采用 `image_url` + base64 data URL；API key 不进入源码或构建期环境变量。
+- 2026-06-12: PR7 已提交，commit `6a41ef0 Add AI API client`。进入 PR8 多模态对话接入。
+- 2026-06-12: PR8 开发中：新增 `useAiChat`，将 API key（仅 React state）、transcript、captured frame 组合为一次多模态请求。
+- 2026-06-12: PR8 多模态对话接入已实现：Ask AI、会话内 API key、AI 请求状态、取消、回答展示；build 和浏览器布局检查通过。
