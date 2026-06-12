@@ -11,8 +11,8 @@
 ## 技术栈
 - Vite + React + TypeScript
 - shadcn/ui + Tailwind CSS + Framer Motion
-- 中转站 API: `https://api.icodeeasy.cc`
-- 多模态模型: Gemini 3.1 Flash（主力），GPT image2（备选）
+- AI API: DashScope OpenAI-compatible endpoint `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- 多模态模型: `qwen-vl-plus`
 - 语音识别: Web Speech API
 - 语音合成: Web Speech API TTS
 - 调试: dev 模式注入 vConsole
