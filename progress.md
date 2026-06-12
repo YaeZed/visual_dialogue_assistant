@@ -75,6 +75,11 @@
   - 补充 Web Speech API TypeScript 类型声明
   - UI 增加麦克风授权、开始/停止识别、transcript 展示与清空入口
   - 浏览器验证语音控件可见、桌面无麦克风/无权限失败路径、移动端无横向溢出
+  - 提交 PR5：`6f62a43 Add speech input module`
+  - 开始 PR6：实现 `useFrameCapture` hook，从 video 元素抓取当前帧并压缩为 JPEG
+  - UI 增加 `Capture frame` 入口、抓帧状态、尺寸/大小/时间元信息与预览
+  - 通过 transcript/interim transcript 推导“问题已准备”信号，用于 Vision 步骤状态
+  - 浏览器验证无摄像头时抓帧按钮禁用、提示可见、移动端无横向溢出
 - Files created/modified:
   - src/hooks/useCamera.ts
   - src/App.tsx
@@ -82,6 +87,7 @@
   - src/hooks/useMicrophone.ts
   - src/hooks/useSpeechRecognition.ts
   - src/vite-env.d.ts
+  - src/hooks/useFrameCapture.ts
 
 ### Phase 3: AI 对话核心
 - **Status:** pending
@@ -128,6 +134,10 @@
 | Speech UI presence | Browser DOM snapshot | microphone and transcript controls visible | `Enable microphone`, `Start listening`, transcript placeholder visible | passed |
 | Microphone fallback | Browser click `Enable microphone` | actionable failure state on desktop without microphone | shows `Retry microphone` and microphone error text | passed |
 | Speech mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
+| Git commit | `git commit -m "Add speech input module"` | local commit created | `6f62a43` | passed |
+| Frame capture build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.74s | passed |
+| Frame UI disabled state | Browser DOM snapshot | capture button visible and disabled without camera | `Capture frame` count 1, enabled false | passed |
+| Frame mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -141,8 +151,8 @@
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 2 进行中，PR4 已提交；PR5 麦克风与语音识别已实现并验证，待提交 |
+| Where am I? | Phase 2 进行中，PR4/PR5 已提交；PR6 视频帧抓取已实现并验证，待提交 |
 | Where am I going? | Phase 1 → 6，共 16 个 PR |
 | What's the goal? | AI 视觉对话助手 MVP，Orb 交互隐喻，手机 Safari 可演示 |
 | What have I learned? | iOS Safari HTTPS 要求、Web Speech API 兼容性、模型选型 |
-| What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、完成 PR1-PR4；已实现 PR5 麦克风权限、Web Speech API 识别和 transcript UI |
+| What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、完成 PR1-PR5；已实现 PR6 视频帧抓取和 JPEG 压缩准备 |

@@ -7,7 +7,8 @@
 - PR2: UI 基础（Tailwind CSS、shadcn/ui 基础结构、Framer Motion）
 - PR3: 手机调试环境（HTTPS dev server、vConsole、ngrok 脚本）
 - PR4: 摄像头模块（权限获取、全屏视频背景、失败重试反馈）
-- PR5: 麦克风与语音识别开发中
+- PR5: 麦克风与语音识别（权限获取、Web Speech API、实时 transcript）
+- PR6: 视频帧抓取开发中
 
 ## 本地开发
 ```bash

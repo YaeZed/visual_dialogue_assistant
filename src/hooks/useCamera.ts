@@ -100,6 +100,8 @@ export function useCamera() {
     }
   }, []);
 
+  const getVideoElement = useCallback(() => videoRef.current, []);
+
   useEffect(() => stopCamera, [stopCamera]);
 
   return {
@@ -110,6 +112,6 @@ export function useCamera() {
     isReady: cameraState.status === "ready",
     startCamera,
     stopCamera,
+    getVideoElement,
   };
 }
-
