@@ -380,3 +380,25 @@
 |------|-------|----------|--------|--------|
 | README required sections | `Select-String README.md` | dependencies, original features, verification, MVP boundary, API key safety present | all required sections found | passed |
 | PR15 build | Documentation-only PR | No runtime build required | no source runtime code changed | skipped |
+
+### PR16: 设计文档与成本控制策略
+- **Status:** in_progress
+- Actions taken:
+  - 先在 `CODEX.md` 中新增 `docs/` 目录约定，再创建项目级设计文档
+  - 新增 `docs/design.md`，说明设计目标、目标用户、用户故事、核心路径、状态设计、失败恢复、成本控制、安全隐私边界和后续扩展方向
+  - README 增加设计文档入口
+  - 文档检查确认设计文档包含用户故事、成本控制、失败恢复、安全与隐私、取舍说明和后续扩展
+- Files created/modified:
+  - docs/design.md
+  - README.md
+  - CODEX.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR16
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Design doc required sections | `Select-String docs/design.md` | user stories, cost control, failure recovery, privacy, tradeoffs present | all required sections found | passed |
+| README design link | `Select-String README.md docs/design.md` | README links to design document | link found | passed |
+| PR16 build | Documentation-only PR | No runtime build required | no source runtime code changed | skipped |
