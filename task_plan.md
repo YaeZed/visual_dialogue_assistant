@@ -92,3 +92,6 @@ Phase 3 / PR7
 - 2026-06-12: PR7 已提交，commit `6a41ef0 Add AI API client`。进入 PR8 多模态对话接入。
 - 2026-06-12: PR8 开发中：新增 `useAiChat`，将 API key（仅 React state）、transcript、captured frame 组合为一次多模态请求。
 - 2026-06-12: PR8 多模态对话接入已实现：Ask AI、会话内 API key、AI 请求状态、取消、回答展示；build 和浏览器布局检查通过。
+- 2026-06-12: PR8 已提交，commit `6d1eb42 Connect multimodal AI request`。进入 PR9 多轮上下文管理。
+- 2026-06-12: PR9 开发中：上下文仅保存在当前 React state，最多把最近 4 轮文本问答带入下一次请求，不持久化、不重复上传历史图片。
+- 2026-06-12: PR9 当前页面多轮上下文已实现：最近 4 轮文本上下文、当前页面 turns、上下文清理；build 和浏览器布局检查通过。
