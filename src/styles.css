@@ -48,6 +48,10 @@
     padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
 
+  .safe-page-mobile-actions {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
   .vision-grid {
     background:
       linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),

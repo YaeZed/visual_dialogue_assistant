@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, CameraOff, Image, KeyRound, Mic, Send, Sparkles, Square, Volume2 } from "lucide-react";
 import { Caption } from "@/components/Caption";
+import { DialogueStatus, type DialogueSignalState, type DialogueTone } from "@/components/DialogueStatus";
+import { MobileActionBar } from "@/components/MobileActionBar";
 import { Orb } from "@/components/Orb";
 import { Button } from "@/components/ui/button";
 import { useAiChat } from "@/hooks/useAiChat";
@@ -132,6 +134,128 @@ function getStatusDotClass(tone: string) {
   );
 }
 
+function getDialogueTone({
+  aiError,
+  frameError,
+  isListening,
+  isSpeaking,
+  isThinking,
+  synthesisError,
+  answer,
+}: {
+  aiError: string | null;
+  answer: string;
+  frameError: string | null;
+  isListening: boolean;
+  isSpeaking: boolean;
+  isThinking: boolean;
+  synthesisError: string | null;
+}) {
+  if (aiError || frameError || synthesisError) {
+    return "error" satisfies DialogueTone;
+  }
+
+  if (isListening || isThinking || isSpeaking) {
+    return "active" satisfies DialogueTone;
+  }
+
+  if (answer) {
+    return "ready" satisfies DialogueTone;
+  }
+
+  return "idle" satisfies DialogueTone;
+}
+
+function getDialogueTitle({
+  answer,
+  hasQuestion,
+  isListening,
+  isSpeaking,
+  isThinking,
+  frame,
+}: {
+  answer: string;
+  frame: boolean;
+  hasQuestion: boolean;
+  isListening: boolean;
+  isSpeaking: boolean;
+  isThinking: boolean;
+}) {
+  if (isSpeaking) {
+    return "Speaking answer";
+  }
+
+  if (isThinking) {
+    return "Reading the scene";
+  }
+
+  if (isListening) {
+    return "Listening for question";
+  }
+
+  if (answer) {
+    return "Answer ready";
+  }
+
+  if (frame && hasQuestion) {
+    return "Ready to ask";
+  }
+
+  if (hasQuestion) {
+    return "Question ready";
+  }
+
+  return "Waiting for input";
+}
+
+function getDialogueDetail({
+  aiError,
+  answer,
+  canAskAi,
+  frame,
+  frameError,
+  hasQuestion,
+  isSpeaking,
+  isThinking,
+  synthesisError,
+}: {
+  aiError: string | null;
+  answer: string;
+  canAskAi: boolean;
+  frame: boolean;
+  frameError: string | null;
+  hasQuestion: boolean;
+  isSpeaking: boolean;
+  isThinking: boolean;
+  synthesisError: string | null;
+}) {
+  if (aiError || frameError || synthesisError) {
+    return aiError ?? frameError ?? synthesisError ?? "Check the current step and retry.";
+  }
+
+  if (isSpeaking) {
+    return "The answer is being read aloud with captions.";
+  }
+
+  if (isThinking) {
+    return "The captured frame and question are being sent to AI.";
+  }
+
+  if (answer) {
+    return "Answer is available with speech and context controls.";
+  }
+
+  if (canAskAi) {
+    return "Question and frame are ready for a multimodal request.";
+  }
+
+  if (hasQuestion && !frame) {
+    return "Question is ready; the scene frame is still missing.";
+  }
+
+  return "No question or scene frame has been captured yet.";
+}
+
 function App() {
   const [apiKey, setApiKey] = useState("");
   const [fallbackQuestion, setFallbackQuestion] = useState("");
@@ -202,6 +326,48 @@ function App() {
   const canAskAi = Boolean(apiKey.trim() && questionText && frame) && !isThinking;
   const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
   const orbState = useOrbState({ isListening, isThinking, isSpeaking });
+  const dialogueTitle = getDialogueTitle({
+    answer,
+    frame: Boolean(frame),
+    hasQuestion,
+    isListening,
+    isSpeaking,
+    isThinking,
+  });
+  const dialogueDetail = getDialogueDetail({
+    aiError,
+    answer,
+    canAskAi,
+    frame: Boolean(frame),
+    frameError,
+    hasQuestion,
+    isSpeaking,
+    isThinking,
+    synthesisError,
+  });
+  const dialogueTone = getDialogueTone({
+    aiError,
+    answer,
+    frameError,
+    isListening,
+    isSpeaking,
+    isThinking,
+    synthesisError,
+  });
+  const dialogueSignals = [
+    {
+      label: "Question",
+      state: hasQuestion ? "ready" : isListening ? "active" : "idle",
+    },
+    {
+      label: "Frame",
+      state: frame ? "ready" : frameStatus === "capturing" ? "active" : "idle",
+    },
+    {
+      label: "Reply",
+      state: answer ? "ready" : isThinking || isSpeaking ? "active" : "idle",
+    },
+  ] satisfies Array<{ label: string; state: DialogueSignalState }>;
   const workflowSteps = [
     { label: "Camera", state: isReady ? "ready" : "next", icon: Camera },
     {
@@ -226,6 +392,18 @@ function App() {
       prompt,
       imageDataUrl,
     });
+
+  const handleAskAi = () => {
+    if (!frame || !canAskAi) {
+      return;
+    }
+
+    void askAiWithFrame(frame.dataUrl, questionText);
+  };
+
+  const handleCaptureFrame = () => {
+    void captureFrame(getVideoElement());
+  };
 
   useEffect(() => {
     if (!answer || answer === lastSpokenAnswerRef.current) {
@@ -263,7 +441,7 @@ function App() {
   };
 
   return (
-    <main className="safe-page min-h-svh bg-[radial-gradient(circle_at_50%_20%,rgba(34,197,94,0.14),transparent_30%),linear-gradient(180deg,#0c1019_0%,#06070b_100%)] px-[18px] md:p-7">
+    <main className="safe-page safe-page-mobile-actions min-h-svh bg-[radial-gradient(circle_at_50%_20%,rgba(34,197,94,0.14),transparent_30%),linear-gradient(180deg,#0c1019_0%,#06070b_100%)] px-[18px] md:p-7">
       <section
         className="grid min-h-[calc(100svh-38px)] gap-[18px] md:min-h-[calc(100svh-56px)] md:grid-cols-[minmax(0,1fr)_360px]"
         aria-label="AI 视觉对话助手"
@@ -300,7 +478,16 @@ function App() {
           />
 
           {isReady && (
-            <Orb className="pointer-events-none absolute right-4 top-4 z-10" size="sm" state={orbState} />
+            <div className="pointer-events-none absolute right-4 top-4 z-10 grid w-[min(78vw,290px)] justify-items-end gap-2">
+              <Orb size="sm" state={orbState} />
+              <DialogueStatus
+                detail={dialogueDetail}
+                signals={dialogueSignals}
+                state={orbState}
+                title={dialogueTitle}
+                tone={dialogueTone}
+              />
+            </div>
           )}
 
           {!isReady && (
@@ -461,7 +648,7 @@ function App() {
 
             <Button
               disabled={!canCaptureFrame}
-              onClick={() => captureFrame(getVideoElement())}
+              onClick={handleCaptureFrame}
               type="button"
               variant="secondary"
             >
@@ -522,10 +709,7 @@ function App() {
             <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
               <Button
                 disabled={!canAskAi}
-                onClick={() =>
-                  frame &&
-                  askAiWithFrame(frame.dataUrl, questionText)
-                }
+                onClick={handleAskAi}
                 type="button"
               >
                 <Send aria-hidden="true" className="size-5" />
@@ -589,7 +773,30 @@ function App() {
           </section>
         </motion.div>
       </section>
-      <Caption text={captionText} visible={isSpeaking && Boolean(captionText)} />
+      <Caption
+        className="bottom-[max(92px,calc(env(safe-area-inset-bottom)+84px))] md:bottom-[max(16px,env(safe-area-inset-bottom))]"
+        text={captionText}
+        visible={isSpeaking && Boolean(captionText)}
+      />
+      <MobileActionBar
+        cameraAction={cameraCopy.action}
+        canAskAi={canAskAi}
+        canCaptureFrame={canCaptureFrame}
+        isCameraBusy={status === "requesting"}
+        isCameraReady={isReady}
+        isListening={isListening}
+        isMicrophoneBusy={microphoneStatus === "requesting"}
+        isMicrophoneReady={isMicrophoneReady}
+        isSpeechReady={isSpeechSupported && speechStatus !== "stopping"}
+        isThinking={isThinking}
+        microphoneAction={microphoneCopy.action}
+        onAskAi={handleAskAi}
+        onCaptureFrame={handleCaptureFrame}
+        onMicrophone={startMicrophone}
+        onSpeechToggle={isListening ? stopListening : startListening}
+        onStartCamera={startCamera}
+        speechAction={speechCopy.action}
+      />
     </main>
   );
 }

@@ -307,3 +307,55 @@
 | PR12 browser reload | In-app browser reload `http://127.0.0.1:5173/` | App renders without Vite overlay | `hasViteOverlay=false`, `hasMain=true` | passed |
 | PR12 mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
 | PR12 build | `npm run build` | TypeScript and Vite build pass | `node.exe` access denied in current sandbox | blocked |
+
+### PR13: Orb 与对话系统状态整合
+- **Status:** in_progress
+- Actions taken:
+  - 新增 `DialogueStatus` 组件，展示当前对话阶段、状态摘要和 Question / Frame / Reply 三个链路信号
+  - 在相机预览右上角将 Orb 与状态层组合为一个稳定状态锚点
+  - 从现有语音、抓帧、AI、TTS 状态推导统一 title/detail/tone，避免新增手动输入和后端复杂度
+  - 浏览器 dev server 重新加载通过，无 Vite error overlay
+  - 移动视口 390x844 检查通过，无横向溢出
+- Files created/modified:
+  - src/components/DialogueStatus.tsx
+  - src/App.tsx
+  - README.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR13
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| PR13 browser reload | In-app browser reload `http://127.0.0.1:5173/` | App renders without Vite overlay | `hasOverlay=false`, `hasMain=true` | passed |
+| PR13 mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
+| PR13 build | `npm run build` | TypeScript and Vite build pass | `node.exe` access denied in current sandbox | blocked |
+
+### PR14: 手机触控栏与安全区适配
+- **Status:** in_progress
+- Actions taken:
+  - 新增 `MobileActionBar`，在移动端底部固定 Camera / Voice / Frame / Ask 四个高频动作
+  - 复用现有相机、语音、抓帧、AI 请求处理函数，不新增后端逻辑或额外状态源
+  - 主页面底部 padding 适配安全区，避免底部触控栏遮挡内容
+  - 字幕浮层在移动端上移到触控栏上方，避免朗读字幕被遮挡
+  - 浏览器验证桌面端移动触控栏隐藏
+  - 浏览器验证 390x844 和 375x667 移动视口无横向溢出，底部触控栏可见
+  - 修复 `safe-page` 覆盖移动底部 padding 的问题，移动端主页面底部留出 96px
+- Files created/modified:
+  - src/components/MobileActionBar.tsx
+  - src/components/Caption.tsx
+  - src/App.tsx
+  - src/styles.css
+  - README.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR14
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| PR14 desktop reload | Browser reload desktop viewport | Mobile bar hidden, no Vite overlay | `mobileNavVisible=false`, `hasOverlay=false` | passed |
+| PR14 mobile viewport | Browser viewport 390x844 | bottom bar visible, no horizontal overflow | `buttonCount=4`, `scrollWidth=375`, `clientWidth=375` | passed |
+| PR14 short mobile viewport | Browser viewport 375x667 | bottom bar remains usable | 4 buttons at 58px height, `scrollWidth=360`, `clientWidth=360` | passed |
+| PR14 safe-area padding | Browser viewport 390x844 | content bottom padding clears mobile action bar | `paddingBottom=96px`, nav visible | passed |
+| PR14 build | `npm run build` | TypeScript and Vite build pass | `node.exe` access denied in current sandbox | blocked |
