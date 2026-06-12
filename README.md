@@ -13,6 +13,15 @@ npm run dev
 npm run build
 ```
 
+手机 Safari 调试：
+```bash
+copy .env.example .env
+npm run dev:https
+npm run tunnel
+```
+
+`.env` 中将 `VITE_ENABLE_VCONSOLE=true` 后，dev 模式会注入 vConsole，方便在手机上看日志。生产构建不注入。
+
 ## 第三方依赖
 - React / React DOM: 前端 UI 渲染
 - Vite: 本地开发服务器与构建
@@ -21,8 +30,10 @@ npm run build
 - shadcn/ui 基础依赖（class-variance-authority、clsx、tailwind-merge、Radix Slot）: 可组合 UI 组件
 - Framer Motion: 状态切换与界面动效
 - lucide-react: 图标
+- @vitejs/plugin-basic-ssl: 本地 HTTPS 开发服务器
+- vConsole: 手机浏览器调试面板
 
-后续 PR 会加入 vConsole、HTTPS 与隧道调试能力。
+ngrok 用于把本地 HTTPS 服务暴露给手机访问，需要开发机提前安装并登录。
 
 ## 原创功能
 - 面向手机 Safari 的视觉对话体验设计

@@ -40,6 +40,8 @@
 |-------|------------|
 | 当前 shell 中 `node.exe` 拒绝访问，`npm` 不在 PATH | 提权后 `node` 可用；使用 `C:\nvm4w\nodejs\npm.cmd` 安装依赖和运行 build |
 | 并行执行多个 `npm install` 会导致 `package.json` / lockfile 结果互相覆盖 | npm 安装依赖必须顺序执行 |
+| Vite 6 CLI 不接受 `--https` | 使用 `@vitejs/plugin-basic-ssl` 并通过环境变量 `VITE_DEV_HTTPS=true` 在 serve 模式开启 HTTPS |
+| 当前机器未安装 ngrok | 已提供 `scripts/start-ngrok.ps1`，运行时会提示安装并登录 ngrok |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl
