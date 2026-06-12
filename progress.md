@@ -281,3 +281,29 @@
 | Orb size fix build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass after placeholder size fix | build completed in 3.28s | passed |
 | Orb default DOM | Browser DOM snapshot | Orb is present and fallback button remains hidden without camera | `AI idle` present, fallback button absent | passed |
 | Orb mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
+
+### PR12: TTS 语音合成与字幕浮层
+- **Status:** in_progress
+- Actions taken:
+  - 新增 `useSpeechSynthesis`，封装 Web Speech API TTS 播放、停止、错误状态和字幕片段
+  - 新增 `Caption` 组件，在页面底部显示当前朗读字幕，不挤压主界面布局
+  - AI 回答生成后自动朗读，回答区提供 Replay answer 和 Stop speech 控制
+  - Orb 状态接入 `isSpeaking`，朗读时切换到 speaking 状态
+  - 浏览器 dev server 重新加载通过，无 Vite error overlay
+  - 移动视口 390x844 检查通过，无横向溢出
+  - 当前会话无法运行 `node.exe`，因此 `npm run build` 需由本机终端复验
+- Files created/modified:
+  - src/hooks/useSpeechSynthesis.ts
+  - src/components/Caption.tsx
+  - src/App.tsx
+  - README.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR12
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| PR12 browser reload | In-app browser reload `http://127.0.0.1:5173/` | App renders without Vite overlay | `hasViteOverlay=false`, `hasMain=true` | passed |
+| PR12 mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
+| PR12 build | `npm run build` | TypeScript and Vite build pass | `node.exe` access denied in current sandbox | blocked |

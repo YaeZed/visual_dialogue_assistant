@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, CameraOff, Image, KeyRound, Mic, Send, Sparkles, Volume2 } from "lucide-react";
+import { Camera, CameraOff, Image, KeyRound, Mic, Send, Sparkles, Square, Volume2 } from "lucide-react";
+import { Caption } from "@/components/Caption";
 import { Orb } from "@/components/Orb";
 import { Button } from "@/components/ui/button";
 import { useAiChat } from "@/hooks/useAiChat";
@@ -8,6 +9,7 @@ import { useCamera, type CameraStatus } from "@/hooks/useCamera";
 import { useFrameCapture } from "@/hooks/useFrameCapture";
 import { useMicrophone, type MicrophoneStatus } from "@/hooks/useMicrophone";
 import { useOrbState } from "@/hooks/useOrbState";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import {
   useSpeechRecognition,
   type SpeechRecognitionStatus,
@@ -133,6 +135,7 @@ function getStatusDotClass(tone: string) {
 function App() {
   const [apiKey, setApiKey] = useState("");
   const [fallbackQuestion, setFallbackQuestion] = useState("");
+  const lastSpokenAnswerRef = useRef("");
   const {
     videoRef,
     status,
@@ -178,6 +181,14 @@ function App() {
     stopListening,
     clearTranscript,
   } = useSpeechRecognition();
+  const {
+    status: synthesisStatus,
+    captionText,
+    errorMessage: synthesisError,
+    isSpeaking,
+    speak,
+    stop,
+  } = useSpeechSynthesis();
   const cameraCopy = getCameraCopy(status, errorMessage);
   const microphoneCopy = getMicrophoneCopy(microphoneStatus, microphoneError);
   const speechCopy = getSpeechCopy(speechStatus, speechError);
@@ -190,7 +201,7 @@ function App() {
   const canCaptureFrame = isReady && frameStatus !== "capturing";
   const canAskAi = Boolean(apiKey.trim() && questionText && frame) && !isThinking;
   const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
-  const orbState = useOrbState({ isListening, isThinking });
+  const orbState = useOrbState({ isListening, isThinking, isSpeaking });
   const workflowSteps = [
     { label: "Camera", state: isReady ? "ready" : "next", icon: Camera },
     {
@@ -215,6 +226,23 @@ function App() {
       prompt,
       imageDataUrl,
     });
+
+  useEffect(() => {
+    if (!answer || answer === lastSpokenAnswerRef.current) {
+      return;
+    }
+
+    lastSpokenAnswerRef.current = answer;
+    speak(answer);
+  }, [answer, speak]);
+
+  useEffect(() => {
+    if (!answer) {
+      lastSpokenAnswerRef.current = "";
+      stop();
+    }
+  }, [answer, stop]);
+
   const handleFallbackVisualQuestion = async () => {
     if (!canCaptureFrame || isThinking) {
       return;
@@ -475,17 +503,19 @@ function App() {
             <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
               <span
                 className={getStatusDotClass(
-                  isThinking ? "active" : answer ? "ready" : aiError ? "error" : "idle",
+                  isThinking || isSpeaking ? "active" : answer ? "ready" : aiError || synthesisError ? "error" : "idle",
                 )}
               />
               <span>
                 {isThinking
                   ? "Thinking with the captured frame"
+                  : isSpeaking
+                    ? "Speaking the AI answer"
                   : answer
                     ? model
                       ? `AI response ready via ${model}`
                       : "AI response ready"
-                    : aiError ?? "Ready after API key, question, and frame are available."}
+                    : aiError ?? synthesisError ?? "Ready after API key, question, and frame are available."}
               </span>
             </div>
 
@@ -514,6 +544,24 @@ function App() {
               )}
             </div>
 
+            {answer && (
+              <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+                <Button
+                  disabled={synthesisStatus === "unsupported"}
+                  onClick={() => speak(answer)}
+                  type="button"
+                  variant="secondary"
+                >
+                  <Volume2 aria-hidden="true" className="size-5" />
+                  Replay answer
+                </Button>
+                <Button disabled={!isSpeaking} onClick={stop} type="button" variant="ghost">
+                  <Square aria-hidden="true" className="size-4" />
+                  Stop speech
+                </Button>
+              </div>
+            )}
+
             <div className="min-h-20 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
               {answer ? (
                 <p className="m-0 leading-relaxed">{answer}</p>
@@ -541,6 +589,7 @@ function App() {
           </section>
         </motion.div>
       </section>
+      <Caption text={captionText} visible={isSpeaking && Boolean(captionText)} />
     </main>
   );
 }
