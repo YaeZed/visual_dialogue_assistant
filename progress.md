@@ -254,3 +254,30 @@
 | Fallback build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.58s | passed |
 | Fallback disabled state | Browser DOM snapshot without camera | no clickable fallback frame before camera is ready | fallback role button count 0 | passed |
 | Fallback mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
+
+### PR11: Orb 状态机与动效
+- **Status:** in_progress
+- Actions taken:
+  - 提交并推送 PR10：`cd86514 Add visual fallback question`
+  - 新增 `useOrbState`，从现有流程状态推导 Orb 状态：idle / listening / thinking / speaking
+  - 新增 `Orb` 组件，按状态切换颜色、光晕、脉动/旋转/波纹动效
+  - Orb 动效使用 `useReducedMotion` 尊重系统减少动态效果设置
+  - 将 Orb 接入预览区：摄像头未启用时作为中心实体，摄像头启用后作为右上角状态实体
+  - 验证 `npm run build` 通过
+  - 浏览器验证默认 Orb 可被辅助技术识别为 `AI idle`，且无摄像头时不暴露 fallback 画面按钮
+  - 移动视口 390x844 检查通过，无横向溢出
+- Files created/modified:
+  - src/hooks/useOrbState.ts
+  - src/components/Orb.tsx
+  - src/App.tsx
+  - README.md
+  - task_plan.md
+  - progress.md
+
+## Test Results: PR11
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Orb build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.30s | passed |
+| Orb size fix build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass after placeholder size fix | build completed in 3.28s | passed |
+| Orb default DOM | Browser DOM snapshot | Orb is present and fallback button remains hidden without camera | `AI idle` present, fallback button absent | passed |
+| Orb mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
