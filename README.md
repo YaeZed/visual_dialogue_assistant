@@ -8,7 +8,8 @@
 - PR3: 手机调试环境（HTTPS dev server、vConsole、ngrok 脚本）
 - PR4: 摄像头模块（权限获取、全屏视频背景、失败重试反馈）
 - PR5: 麦克风与语音识别（权限获取、Web Speech API、实时 transcript）
-- PR6: 视频帧抓取开发中
+- PR6: 视频帧抓取（canvas 截图、JPEG 压缩、抓帧元信息）
+- PR7: API 层开发中
 
 ## 本地开发
 ```bash
@@ -25,6 +26,8 @@ npm run tunnel
 ```
 
 `.env` 中将 `VITE_ENABLE_VCONSOLE=true` 后，dev 模式会注入 vConsole，方便在手机上看日志。生产构建不注入。
+
+`.env` 可配置 `VITE_AI_API_BASE_URL` 和 `VITE_AI_MODEL`。API key 不写入 `.env` 或源码，后续通过本次会话输入传给 API 层。
 
 ## 第三方依赖
 - React / React DOM: 前端 UI 渲染

@@ -80,6 +80,7 @@
   - UI 增加 `Capture frame` 入口、抓帧状态、尺寸/大小/时间元信息与预览
   - 通过 transcript/interim transcript 推导“问题已准备”信号，用于 Vision 步骤状态
   - 浏览器验证无摄像头时抓帧按钮禁用、提示可见、移动端无横向溢出
+  - 提交 PR6：`7558827 Add frame capture module`
 - Files created/modified:
   - src/hooks/useCamera.ts
   - src/App.tsx
@@ -138,6 +139,7 @@
 | Frame capture build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.74s | passed |
 | Frame UI disabled state | Browser DOM snapshot | capture button visible and disabled without camera | `Capture frame` count 1, enabled false | passed |
 | Frame mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |
+| Git commit | `git commit -m "Add frame capture module"` | local commit created | `7558827` | passed |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -151,8 +153,29 @@
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 2 进行中，PR4/PR5 已提交；PR6 视频帧抓取已实现并验证，待提交 |
+| Where am I? | Phase 3 / PR7 进行中：API 层正在实现 |
 | Where am I going? | Phase 1 → 6，共 16 个 PR |
 | What's the goal? | AI 视觉对话助手 MVP，Orb 交互隐喻，手机 Safari 可演示 |
 | What have I learned? | iOS Safari HTTPS 要求、Web Speech API 兼容性、模型选型 |
 | What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、完成 PR1-PR5；已实现 PR6 视频帧抓取和 JPEG 压缩准备 |
+
+### Phase 3: AI 对话核心
+- **Status:** in_progress
+- Actions taken:
+  - 开始 PR7：查阅 OpenAI 官方视觉输入格式，确认 base64 data URL 可作为图片输入
+  - 新增 `src/lib/api.ts`，封装 OpenAI-compatible `/v1/chat/completions` 多模态请求
+  - API key 设计为调用方显式传入，不写入源码，也不使用 `VITE_AI_API_KEY`
+  - `.env.example` 仅保留 API base URL 和 model 配置
+  - 验证 `npm run build` 通过
+- Files created/modified:
+  - src/lib/api.ts
+  - .env.example
+  - README.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: Phase 3
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| API layer build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.82s | passed |
