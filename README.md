@@ -4,7 +4,9 @@
 
 ## 当前状态
 - PR1: Vite + React + TypeScript 项目骨架
-- PR2: UI 基础依赖接入中（Tailwind CSS、shadcn/ui 基础结构、Framer Motion）
+- PR2: UI 基础（Tailwind CSS、shadcn/ui 基础结构、Framer Motion）
+- PR3: 手机调试环境（HTTPS dev server、vConsole、ngrok 脚本）
+- PR4: 摄像头模块开发中
 
 ## 本地开发
 ```bash
