@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 4 / PR11
+Phase 4 / PR12
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -100,3 +100,4 @@ Phase 4 / PR11
 - 2026-06-12: PR10 已提交并推送，commit `cd86514 Add visual fallback question`。进入 Phase 4 / PR11 Orb 状态机。
 - 2026-06-12: PR11 开发中：新增 `useOrbState` 和 `Orb`，根据 listening/thinking/speaking/idle 映射颜色与动效，并尊重 reduced-motion。
 - 2026-06-12: PR11 Orb 状态机与动效已实现：idle/listening/thinking/speaking 状态映射、Orb 组件、预览区接入；build 和浏览器布局检查通过。
+- 2026-06-12: PR12 开发中：新增浏览器端 TTS 朗读与底部字幕浮层，AI 回答生成后自动播放并可停止/重播。
