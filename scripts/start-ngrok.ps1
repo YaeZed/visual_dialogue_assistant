@@ -9,6 +9,5 @@ if (-not $ngrok) {
   exit 1
 }
 
-Write-Host "Starting ngrok HTTPS tunnel for https://localhost:$Port"
-& $ngrok.Source http "https://localhost:$Port"
-
+Write-Host "Starting ngrok HTTPS tunnel for http://localhost:$Port"
+& $ngrok.Source http "http://localhost:$Port"

@@ -55,9 +55,9 @@ npm run build
 npm run preview
 ```
 
-手机测试阶段使用 HTTPS 与隧道命令（后续 PR 补齐脚本）：
+手机测试阶段使用本地 HTTP dev server 与 ngrok HTTPS 隧道：
 ```bash
-npm run dev:https
+npm run dev
 npm run tunnel
 ```
 
