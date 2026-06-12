@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 1
+Phase 3 / PR7
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -87,3 +87,5 @@ Phase 1
 - 2026-06-12: PR5 麦克风与语音识别模块已实现：`useMicrophone`、`useSpeechRecognition`、Web Speech API 类型、实时 transcript UI；build 和浏览器失败路径检查通过。
 - 2026-06-12: PR5 已提交，commit `6f62a43 Add speech input module`。进入 PR6 视频帧抓取模块。
 - 2026-06-12: PR6 视频帧抓取模块已实现：`useFrameCapture`、canvas JPEG 压缩、data URL 预览、抓帧元信息；build 和浏览器布局检查通过。
+- 2026-06-12: PR6 已提交，commit `7558827 Add frame capture module`。Phase 2 完成，进入 Phase 3 / PR7 API 层。
+- 2026-06-12: PR7 API 层开发中：OpenAI-compatible Chat Completions 封装，图片输入采用 `image_url` + base64 data URL；API key 不进入源码或构建期环境变量。
