@@ -46,11 +46,11 @@ http://127.0.0.1:5173/
 
 ```bash
 copy .env.example .env
-npm run dev:https
+npm run dev
 npm run tunnel
 ```
 
-`npm run tunnel` 依赖本机已安装并登录 ngrok。脚本会把本地 HTTPS 服务暴露给手机访问。
+`npm run tunnel` 依赖本机已安装并登录 ngrok。脚本会把本地 HTTP 开发服务通过 ngrok HTTPS 域名暴露给手机访问。
 
 ## 环境变量
 
@@ -116,7 +116,7 @@ npm run build
 
 真机验证：
 
-- 使用 `npm run dev:https` 和 `npm run tunnel` 在手机 Safari 打开页面。
+- 使用 `npm run dev` 和 `npm run tunnel` 在手机 Safari 打开页面。
 - 授权摄像头和麦克风。
 - 验证语音识别、抓帧、AI 回答、TTS、字幕和底部触控栏。
 
