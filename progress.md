@@ -39,6 +39,7 @@
   - 验证 `npm run build` 通过
   - 验证 `npm run dev:https` 可启动 HTTPS dev server，日志显示 `https://127.0.0.1:5173/`
   - 验证 `npm run tunnel` 在未安装 ngrok 时给出明确错误
+  - 提交 PR3：`ce7d48e Add mobile dev environment`
 - Files created/modified:
   - CODEX.md
   - .gitignore
@@ -61,11 +62,17 @@
   - scripts/start-ngrok.ps1
 
 ### Phase 2: 媒体采集与语音识别
-- **Status:** pending
+- **Status:** in_progress
 - Actions taken:
-  -
+  - 开始 PR4：实现 `useCamera` hook，封装摄像头启动、停止、错误映射和组件卸载清理
+  - 将首屏预览区接入真实 `<video>`，摄像头 ready 后全屏显示视频背景
+  - 添加摄像头权限、无设备、通用错误的可行动反馈文案
+  - 浏览器验证首屏加载、Start camera 按钮、无摄像头/无权限路径的 Retry camera 反馈
+  - 移动视口 390x844 检查通过，无横向溢出
 - Files created/modified:
-  -
+  - src/hooks/useCamera.ts
+  - src/App.tsx
+  - README.md
 
 ### Phase 3: AI 对话核心
 - **Status:** pending
@@ -103,6 +110,10 @@
 | Dev environment build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.23s | passed |
 | HTTPS dev server | `npm run dev:https` | local HTTPS server starts | Vite ready at `https://127.0.0.1:5173/` | passed |
 | Tunnel script without ngrok | `npm run tunnel` | clear actionable error | reports ngrok not installed or not in PATH | passed |
+| Git commit | `git commit -m "Add mobile dev environment"` | local commit created | `ce7d48e` | passed |
+| Camera module build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.25s | passed |
+| Camera start fallback | Browser click `Start camera` | actionable failure state on desktop without camera | shows `Retry camera` and camera error text | passed |
+| Mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=390`, `clientWidth=390` | passed |
 
 ## Error Log
 | Timestamp | Error | Attempt | Resolution |
@@ -115,8 +126,8 @@
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 1 进行中，PR1/PR2 已提交；PR3 开发环境已实现并通过验证，待提交 |
+| Where am I? | Phase 2 进行中，PR4 摄像头模块已实现并验证，待提交 |
 | Where am I going? | Phase 1 → 6，共 16 个 PR |
 | What's the goal? | AI 视觉对话助手 MVP，Orb 交互隐喻，手机 Safari 可演示 |
 | What have I learned? | iOS Safari HTTPS 要求、Web Speech API 兼容性、模型选型 |
-| What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、创建 Vite + React + TypeScript 骨架、安装依赖并通过 build；已接入 UI 基础依赖和 shadcn 组件骨架 |
+| What have I done? | 需求对齐完成，三份规划文件已创建；已补 `CODEX.md`、完成 PR1-PR3；已实现 PR4 摄像头预览、权限请求和失败重试反馈 |

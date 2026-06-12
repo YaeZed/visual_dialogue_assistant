@@ -81,3 +81,5 @@ Phase 1
 - 2026-06-12: PR2 UI 基础已接入：Tailwind CSS v4、shadcn/ui 基础结构、Framer Motion、lucide icons；`npm run build` 已通过。
 - 2026-06-12: PR2 已提交，commit `4def3a0 Add UI foundation`。
 - 2026-06-12: PR3 开发环境已接入：HTTPS dev server、ngrok 脚本、dev 模式 vConsole 注入；`npm run build` 已通过，`npm run dev:https` 可启动 HTTPS，本机未安装 ngrok。
+- 2026-06-12: PR3 已提交，commit `ce7d48e Add mobile dev environment`。Phase 1 完成，进入 Phase 2 / PR4 摄像头模块。
+- 2026-06-12: PR4 摄像头模块已实现：`useCamera`、后置摄像头约束、全屏视频预览、失败/重试反馈；build 和浏览器移动视口检查通过。
