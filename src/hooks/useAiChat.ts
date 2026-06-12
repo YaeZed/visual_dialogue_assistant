@@ -3,11 +3,20 @@ import { AiApiError, createVisionChatCompletion } from "@/lib/api";
 
 export type AiChatStatus = "idle" | "thinking" | "ready" | "error";
 
+export interface AiConversationTurn {
+  id: string;
+  question: string;
+  answer: string;
+  model: string;
+  createdAt: string;
+}
+
 interface AiChatState {
   status: AiChatStatus;
   answer: string;
   model: string | null;
   errorMessage: string | null;
+  turns: AiConversationTurn[];
 }
 
 interface AskVisionQuestionInput {
@@ -21,6 +30,7 @@ const initialState: AiChatState = {
   answer: "",
   model: null,
   errorMessage: null,
+  turns: [],
 };
 
 function getAiErrorMessage(error: unknown) {
@@ -57,15 +67,28 @@ export function useAiChat() {
           apiKey,
           prompt,
           imageDataUrl,
+          history: chatState.turns.map((turn) => ({
+            question: turn.question,
+            answer: turn.answer,
+          })),
           signal: abortController.signal,
         });
 
-        setChatState({
+        const nextTurn: AiConversationTurn = {
+          id: crypto.randomUUID(),
+          question: prompt.trim(),
+          answer: result.content,
+          model: result.model,
+          createdAt: new Date().toISOString(),
+        };
+
+        setChatState((current) => ({
           status: "ready",
           answer: result.content,
           model: result.model,
           errorMessage: null,
-        });
+          turns: [...current.turns, nextTurn],
+        }));
 
         return result;
       } catch (error) {
@@ -81,7 +104,7 @@ export function useAiChat() {
         }
       }
     },
-    [],
+    [chatState.turns],
   );
 
   const cancelRequest = useCallback(() => {
@@ -96,12 +119,19 @@ export function useAiChat() {
 
   const clearAnswer = useCallback(() => setChatState(initialState), []);
 
+  const clearContext = useCallback(() => {
+    setChatState((current) => ({
+      ...current,
+      turns: [],
+    }));
+  }, []);
+
   return {
     ...chatState,
     isThinking: chatState.status === "thinking",
     askVisionQuestion,
     cancelRequest,
     clearAnswer,
+    clearContext,
   };
 }
-

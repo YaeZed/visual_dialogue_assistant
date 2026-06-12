@@ -148,11 +148,13 @@ function App() {
     status: aiStatus,
     answer,
     model,
+    turns,
     errorMessage: aiError,
     isThinking,
     askVisionQuestion,
     cancelRequest,
     clearAnswer,
+    clearContext,
   } = useAiChat();
   const {
     status: microphoneStatus,
@@ -462,6 +464,23 @@ function App() {
               ) : (
                 <p className="m-0 text-muted">AI answer will appear here.</p>
               )}
+            </div>
+
+            <div className="grid gap-2 rounded-card border border-panel-border bg-background/35 p-3 text-xs text-slate-300">
+              <div className="flex items-center justify-between gap-3">
+                <span>Context: {turns.length} turn{turns.length === 1 ? "" : "s"} in this page</span>
+                {turns.length > 0 && (
+                  <Button onClick={clearContext} size="sm" type="button" variant="ghost">
+                    Clear context
+                  </Button>
+                )}
+              </div>
+              {turns.slice(-2).map((turn) => (
+                <div className="grid gap-1 border-t border-panel-border pt-2" key={turn.id}>
+                  <p className="m-0 text-slate-400">Q: {turn.question}</p>
+                  <p className="m-0 text-slate-200">A: {turn.answer}</p>
+                </div>
+              ))}
             </div>
           </section>
         </motion.div>
