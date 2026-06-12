@@ -1,5 +1,5 @@
-const DEFAULT_API_BASE_URL = "https://api.icodeeasy.cc";
-const DEFAULT_MODEL = "gemini-3.1-flash";
+const DEFAULT_API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1";
+const DEFAULT_MODEL = "qwen-vl-plus";
 const MAX_CONTEXT_TURNS = 4;
 
 type ChatRole = "system" | "user" | "assistant";
@@ -27,7 +27,7 @@ interface ChatCompletionRequestBody {
   model: string;
   messages: ChatMessage[];
   temperature?: number;
-  max_completion_tokens?: number;
+  max_tokens?: number;
 }
 
 interface ChatCompletionResponse {
@@ -181,7 +181,7 @@ export async function createVisionChatCompletion({
     model,
     messages: buildVisionMessages(prompt.trim(), imageDataUrl, history),
     temperature: 0.3,
-    max_completion_tokens: maxTokens,
+    max_tokens: maxTokens,
   };
 
   const response = await fetch(getChatCompletionsUrl(baseUrl), {

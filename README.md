@@ -59,8 +59,8 @@ npm run tunnel
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
 | `VITE_ENABLE_VCONSOLE` | `false` | dev 模式是否注入 vConsole，方便手机查看日志 |
-| `VITE_AI_API_BASE_URL` | `https://api.icodeeasy.cc` | OpenAI-compatible API base URL |
-| `VITE_AI_MODEL` | `gemini-3.1-flash` | 多模态模型 ID |
+| `VITE_AI_API_BASE_URL` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | OpenAI-compatible API base URL |
+| `VITE_AI_MODEL` | `qwen-vl-plus` | 多模态视觉模型 ID |
 
 API key 不写入 `.env`、源码、localStorage 或 sessionStorage，只在当前页面会话中通过输入框传给 API 层。
 
