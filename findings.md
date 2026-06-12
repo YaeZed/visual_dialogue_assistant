@@ -52,6 +52,7 @@
 | TTS 与字幕不应增加后端成本 | PR12 使用浏览器 Web Speech API TTS，AI 回答在本机朗读并显示字幕，不新增服务端音频生成费用 |
 | Orb 需要承载状态，不承载说明书 | PR13 在预览区增加精简对话状态层，只显示阶段、问题/画面/回答信号，不新增操作入口 |
 | 手机端高频操作不应藏在滚动面板里 | PR14 增加底部安全区触控栏，保留原有面板但把 Camera / Voice / Frame / Ask 四个高频动作固定到拇指区 |
+| README 必须服务评审和复现 | PR15 将 README 从进度清单升级为交付文档，明确运行命令、环境变量、依赖来源、原创功能和验证边界 |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl
