@@ -4,6 +4,7 @@
 
 ## 当前状态
 - PR1: Vite + React + TypeScript 项目骨架
+- PR2: UI 基础依赖接入中（Tailwind CSS、shadcn/ui 基础结构、Framer Motion）
 
 ## 本地开发
 ```bash
@@ -16,11 +17,14 @@ npm run build
 - React / React DOM: 前端 UI 渲染
 - Vite: 本地开发服务器与构建
 - TypeScript: 类型检查
+- Tailwind CSS: 样式系统
+- shadcn/ui 基础依赖（class-variance-authority、clsx、tailwind-merge、Radix Slot）: 可组合 UI 组件
+- Framer Motion: 状态切换与界面动效
+- lucide-react: 图标
 
-后续 PR 会加入 Tailwind CSS、shadcn/ui、Framer Motion、vConsole、HTTPS 与隧道调试能力。
+后续 PR 会加入 vConsole、HTTPS 与隧道调试能力。
 
 ## 原创功能
 - 面向手机 Safari 的视觉对话体验设计
 - Orb 状态可视化交互
 - 单帧抓取式多模态对话流程，控制带宽与模型成本
-
