@@ -179,3 +179,27 @@
 | Test | Input | Expected | Actual | Status |
 |------|-------|----------|--------|--------|
 | API layer build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.82s | passed |
+
+### PR8: 多模态对话接入
+- **Status:** in_progress
+- Actions taken:
+  - 提交 PR7：`6a41ef0 Add AI API client`
+  - 新增 `useAiChat` hook，管理 AI 请求状态、取消、错误和回答
+  - UI 增加本次会话 API key 输入、Ask AI、Cancel、AI answer 展示
+  - API key 只保存在 React state，不写入 `.env`、localStorage 或源码
+  - 验证 `npm run build` 通过
+  - 浏览器验证 `Ask AI` 默认禁用、API key 输入存在、AI answer 占位可见
+  - 移动视口 390x844 检查通过，无横向溢出
+- Files created/modified:
+  - src/hooks/useAiChat.ts
+  - src/App.tsx
+  - README.md
+  - task_plan.md
+  - progress.md
+
+## Test Results: PR8
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Multimodal UI build | `C:\nvm4w\nodejs\npm.cmd run build` | TypeScript and Vite build pass | build completed in 3.49s | passed |
+| Ask AI default state | Browser DOM snapshot | button visible and disabled until key/question/frame are ready | `Ask AI` count 1, enabled false | passed |
+| AI mobile viewport | Browser viewport 390x844 | no horizontal overflow | `scrollWidth=375`, `clientWidth=375` | passed |

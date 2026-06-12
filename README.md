@@ -9,7 +9,8 @@
 - PR4: 摄像头模块（权限获取、全屏视频背景、失败重试反馈）
 - PR5: 麦克风与语音识别（权限获取、Web Speech API、实时 transcript）
 - PR6: 视频帧抓取（canvas 截图、JPEG 压缩、抓帧元信息）
-- PR7: API 层开发中
+- PR7: API 层（OpenAI-compatible 多模态请求封装）
+- PR8: 多模态对话开发中
 
 ## 本地开发
 ```bash
