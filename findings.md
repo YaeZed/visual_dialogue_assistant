@@ -51,6 +51,7 @@
 | Orb 是状态可视化，不应成为新交互入口 | PR11 将 Orb 设置为 `role=img`，只表达当前 AI 状态，不抢占按钮/预览区操作 |
 | TTS 与字幕不应增加后端成本 | PR12 使用浏览器 Web Speech API TTS，AI 回答在本机朗读并显示字幕，不新增服务端音频生成费用 |
 | Orb 需要承载状态，不承载说明书 | PR13 在预览区增加精简对话状态层，只显示阶段、问题/画面/回答信号，不新增操作入口 |
+| 手机端高频操作不应藏在滚动面板里 | PR14 增加底部安全区触控栏，保留原有面板但把 Camera / Voice / Frame / Ask 四个高频动作固定到拇指区 |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl

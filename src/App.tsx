@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Camera, CameraOff, Image, KeyRound, Mic, Send, Sparkles, Square, Volume2 } from "lucide-react";
 import { Caption } from "@/components/Caption";
 import { DialogueStatus, type DialogueSignalState, type DialogueTone } from "@/components/DialogueStatus";
+import { MobileActionBar } from "@/components/MobileActionBar";
 import { Orb } from "@/components/Orb";
 import { Button } from "@/components/ui/button";
 import { useAiChat } from "@/hooks/useAiChat";
@@ -392,6 +393,18 @@ function App() {
       imageDataUrl,
     });
 
+  const handleAskAi = () => {
+    if (!frame || !canAskAi) {
+      return;
+    }
+
+    void askAiWithFrame(frame.dataUrl, questionText);
+  };
+
+  const handleCaptureFrame = () => {
+    void captureFrame(getVideoElement());
+  };
+
   useEffect(() => {
     if (!answer || answer === lastSpokenAnswerRef.current) {
       return;
@@ -428,7 +441,7 @@ function App() {
   };
 
   return (
-    <main className="safe-page min-h-svh bg-[radial-gradient(circle_at_50%_20%,rgba(34,197,94,0.14),transparent_30%),linear-gradient(180deg,#0c1019_0%,#06070b_100%)] px-[18px] md:p-7">
+    <main className="safe-page safe-page-mobile-actions min-h-svh bg-[radial-gradient(circle_at_50%_20%,rgba(34,197,94,0.14),transparent_30%),linear-gradient(180deg,#0c1019_0%,#06070b_100%)] px-[18px] md:p-7">
       <section
         className="grid min-h-[calc(100svh-38px)] gap-[18px] md:min-h-[calc(100svh-56px)] md:grid-cols-[minmax(0,1fr)_360px]"
         aria-label="AI 视觉对话助手"
@@ -635,7 +648,7 @@ function App() {
 
             <Button
               disabled={!canCaptureFrame}
-              onClick={() => captureFrame(getVideoElement())}
+              onClick={handleCaptureFrame}
               type="button"
               variant="secondary"
             >
@@ -696,10 +709,7 @@ function App() {
             <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
               <Button
                 disabled={!canAskAi}
-                onClick={() =>
-                  frame &&
-                  askAiWithFrame(frame.dataUrl, questionText)
-                }
+                onClick={handleAskAi}
                 type="button"
               >
                 <Send aria-hidden="true" className="size-5" />
@@ -763,7 +773,30 @@ function App() {
           </section>
         </motion.div>
       </section>
-      <Caption text={captionText} visible={isSpeaking && Boolean(captionText)} />
+      <Caption
+        className="bottom-[max(92px,calc(env(safe-area-inset-bottom)+84px))] md:bottom-[max(16px,env(safe-area-inset-bottom))]"
+        text={captionText}
+        visible={isSpeaking && Boolean(captionText)}
+      />
+      <MobileActionBar
+        cameraAction={cameraCopy.action}
+        canAskAi={canAskAi}
+        canCaptureFrame={canCaptureFrame}
+        isCameraBusy={status === "requesting"}
+        isCameraReady={isReady}
+        isListening={isListening}
+        isMicrophoneBusy={microphoneStatus === "requesting"}
+        isMicrophoneReady={isMicrophoneReady}
+        isSpeechReady={isSpeechSupported && speechStatus !== "stopping"}
+        isThinking={isThinking}
+        microphoneAction={microphoneCopy.action}
+        onAskAi={handleAskAi}
+        onCaptureFrame={handleCaptureFrame}
+        onMicrophone={startMicrophone}
+        onSpeechToggle={isListening ? stopListening : startListening}
+        onStartCamera={startCamera}
+        speechAction={speechCopy.action}
+      />
     </main>
   );
 }
