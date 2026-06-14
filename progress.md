@@ -518,6 +518,30 @@
 | Browser mobile check | viewport 390x844 | no horizontal overflow; bottom bar buttons visible | `scrollWidth=375`, buttons `摄像头/对话/画面/提问` visible | passed |
 | Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
 
+### PR29: 显式文本问题输入
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` 待定 P2 项拆分本次范围，只解决语音识别不可用时无法提问的问题。
+  - 在当前步骤卡片加入“文本问题”输入框；没有语音文本时，输入内容会作为本轮 `questionText`。
+  - 语音识别 unsupported/error 时，右侧当前步骤改为“可以输入问题”，下一步区域提示先输入问题。
+  - 保持语音文本优先，文本输入只复用既有抓帧、提问、失败重试和清空问题逻辑，不新增独立发送路径。
+- Files modified:
+  - frontend/src/App.tsx
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR29
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend\tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend\vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay or console errors | main present, one start entry, logs empty | passed |
+| Browser mobile viewport | viewport 390x844 | no horizontal overflow; bottom actions visible | `scrollWidth=375`, `clientWidth=375`, 4 mobile actions visible | passed |
+| Text input camera-ready path | camera ready with speech unsupported/error | input visible and reused for visual question | desktop environment has no camera permission path | blocked |
+
 ### PR22: AI 思考时沉浸式等待体验
 - **Status:** ready_for_pr
 - Actions taken:
