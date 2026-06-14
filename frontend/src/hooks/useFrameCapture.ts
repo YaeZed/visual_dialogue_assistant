@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 export type FrameCaptureStatus = "idle" | "capturing" | "ready" | "error";
+export type FrameCaptureMode = "low" | "high";
 
 export interface CapturedFrame {
   dataUrl: string;
@@ -9,6 +10,7 @@ export interface CapturedFrame {
   height: number;
   sizeKb: number;
   capturedAt: string;
+  mode: FrameCaptureMode;
 }
 
 interface FrameCaptureState {
@@ -23,14 +25,34 @@ const initialState: FrameCaptureState = {
   errorMessage: null,
 };
 
-const targetFrameSizeKb = 40;
-const compressionAttempts = [
-  { maxLongEdge: 1280, quality: 0.5 },
-  { maxLongEdge: 1280, quality: 0.45 },
-  { maxLongEdge: 960, quality: 0.45 },
-  { maxLongEdge: 960, quality: 0.4 },
-  { maxLongEdge: 720, quality: 0.4 },
-];
+const compressionPresets = {
+  low: {
+    targetFrameSizeKb: 40,
+    attempts: [
+      { maxLongEdge: 1280, quality: 0.5 },
+      { maxLongEdge: 1280, quality: 0.45 },
+      { maxLongEdge: 960, quality: 0.45 },
+      { maxLongEdge: 960, quality: 0.4 },
+      { maxLongEdge: 720, quality: 0.4 },
+    ],
+  },
+  high: {
+    targetFrameSizeKb: 120,
+    attempts: [
+      { maxLongEdge: 1600, quality: 0.72 },
+      { maxLongEdge: 1600, quality: 0.64 },
+      { maxLongEdge: 1280, quality: 0.64 },
+      { maxLongEdge: 1280, quality: 0.56 },
+      { maxLongEdge: 960, quality: 0.56 },
+    ],
+  },
+} satisfies Record<
+  FrameCaptureMode,
+  {
+    targetFrameSizeKb: number;
+    attempts: Array<{ maxLongEdge: number; quality: number }>;
+  }
+>;
 
 interface CompressionResult {
   blob: Blob;
@@ -95,10 +117,16 @@ function drawVideoFrame(video: HTMLVideoElement, width: number, height: number) 
   return canvas;
 }
 
-async function compressVideoFrame(video: HTMLVideoElement, sourceWidth: number, sourceHeight: number) {
+async function compressVideoFrame(
+  video: HTMLVideoElement,
+  sourceWidth: number,
+  sourceHeight: number,
+  mode: FrameCaptureMode,
+) {
+  const preset = compressionPresets[mode];
   let smallestResult: CompressionResult | null = null;
 
-  for (const attempt of compressionAttempts) {
+  for (const attempt of preset.attempts) {
     const { width, height } = getScaledFrameSize(sourceWidth, sourceHeight, attempt.maxLongEdge);
     const canvas = drawVideoFrame(video, width, height);
     const blob = await canvasToJpegBlob(canvas, attempt.quality);
@@ -108,7 +136,7 @@ async function compressVideoFrame(video: HTMLVideoElement, sourceWidth: number, 
       smallestResult = result;
     }
 
-    if (blob.size <= targetFrameSizeKb * 1024) {
+    if (blob.size <= preset.targetFrameSizeKb * 1024) {
       return result;
     }
   }
@@ -123,7 +151,10 @@ async function compressVideoFrame(video: HTMLVideoElement, sourceWidth: number, 
 export function useFrameCapture() {
   const [frameState, setFrameState] = useState<FrameCaptureState>(initialState);
 
-  const captureFrame = useCallback(async (video: HTMLVideoElement | null) => {
+  const captureFrame = useCallback(async (
+    video: HTMLVideoElement | null,
+    mode: FrameCaptureMode = "low",
+  ) => {
     if (!video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
       setFrameState({
         status: "error",
@@ -148,7 +179,7 @@ export function useFrameCapture() {
     setFrameState((current) => ({ ...current, status: "capturing", errorMessage: null }));
 
     try {
-      const compressedFrame = await compressVideoFrame(video, width, height);
+      const compressedFrame = await compressVideoFrame(video, width, height, mode);
       const blob = compressedFrame.blob;
       const dataUrl = await blobToDataUrl(blob);
       const frame: CapturedFrame = {
@@ -158,6 +189,7 @@ export function useFrameCapture() {
         height: compressedFrame.height,
         sizeKb: Math.round((blob.size / 1024) * 10) / 10,
         capturedAt: new Date().toISOString(),
+        mode,
       };
 
       setFrameState({ status: "ready", frame, errorMessage: null });

@@ -24,7 +24,7 @@ import { Orb } from "@/components/Orb";
 import { Button } from "@/components/ui/button";
 import { useAiChat } from "@/hooks/useAiChat";
 import { useCamera, type CameraStatus } from "@/hooks/useCamera";
-import { useFrameCapture } from "@/hooks/useFrameCapture";
+import { useFrameCapture, type FrameCaptureMode } from "@/hooks/useFrameCapture";
 import { useMicrophone, type MicrophoneStatus } from "@/hooks/useMicrophone";
 import { useOrbState } from "@/hooks/useOrbState";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
@@ -330,6 +330,7 @@ function App() {
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [isFollowUpListening, setIsFollowUpListening] = useState(false);
   const [isAiResponseSlow, setIsAiResponseSlow] = useState(false);
+  const [frameCaptureMode, setFrameCaptureMode] = useState<FrameCaptureMode>("low");
   const [copiedTarget, setCopiedTarget] = useState<CopyTarget | null>(null);
   const [copyError, setCopyError] = useState("");
   const lastSpokenAnswerRef = useRef("");
@@ -411,6 +412,10 @@ function App() {
   const answerSummary = useMemo(() => getAnswerSummary(answer), [answer]);
   const shouldShowTextQuestionInput =
     !answer && !isListening && !isThinking && (!spokenText || Boolean(fallbackQuestion));
+  const frameCaptureModeDetail =
+    frameCaptureMode === "low"
+      ? "低清模式会优先压缩到约 40KB，适合弱网快速提问。"
+      : "高清模式会保留更多细节，适合文字、小物体或复杂画面。";
   const orbState = useOrbState({ isListening, isThinking, isSpeaking });
   const dialogueTitle = getDialogueTitle({
     answer,
@@ -548,7 +553,15 @@ function App() {
   };
 
   const handleCaptureFrame = () => {
-    void captureFrame(getVideoElement());
+    void captureFrame(getVideoElement(), frameCaptureMode);
+  };
+
+  const handleFrameCaptureModeChange = (mode: FrameCaptureMode) => {
+    setFrameCaptureMode(mode);
+
+    if (frame && frame.mode !== mode) {
+      clearFrame();
+    }
   };
 
   const handleCopyAnswer = async (text: string, target: CopyTarget) => {
@@ -689,7 +702,7 @@ function App() {
       return;
     }
 
-    const nextFrame = await captureFrame(getVideoElement());
+    const nextFrame = await captureFrame(getVideoElement(), frameCaptureMode);
 
     if (!nextFrame) {
       return;
@@ -722,7 +735,7 @@ function App() {
       stopListening();
 
       void (async () => {
-        const nextFrame = await captureFrame(getVideoElement());
+        const nextFrame = await captureFrame(getVideoElement(), frameCaptureMode);
 
         if (!nextFrame) {
           autoAskedQuestionRef.current = "";
@@ -737,6 +750,7 @@ function App() {
   }, [
     askAiWithFrame,
     captureFrame,
+    frameCaptureMode,
     getVideoElement,
     interimTranscript,
     isReady,
@@ -897,6 +911,33 @@ function App() {
                       value={fallbackQuestion}
                     />
                   </label>
+                )}
+
+                {isReady && !isThinking && (
+                  <div className="grid gap-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="m-0 text-xs font-bold uppercase text-muted">抓帧模式</p>
+                      <div className="grid grid-cols-2 gap-1 rounded-card border border-panel-border bg-background/48 p-1">
+                        <Button
+                          className="min-h-9 px-3 text-xs"
+                          onClick={() => handleFrameCaptureModeChange("low")}
+                          type="button"
+                          variant={frameCaptureMode === "low" ? "default" : "ghost"}
+                        >
+                          低清
+                        </Button>
+                        <Button
+                          className="min-h-9 px-3 text-xs"
+                          onClick={() => handleFrameCaptureModeChange("high")}
+                          type="button"
+                          variant={frameCaptureMode === "high" ? "default" : "ghost"}
+                        >
+                          高清
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="m-0 text-xs leading-relaxed text-muted">{frameCaptureModeDetail}</p>
+                  </div>
                 )}
 
                 {answer && !isListening && !isThinking && (
@@ -1127,6 +1168,7 @@ function App() {
                         />
                         <span>
                           {frame.width}x{frame.height}，{frame.sizeKb} KB，
+                          {frame.mode === "low" ? "低清" : "高清"}，
                           {new Date(frame.capturedAt).toLocaleTimeString()}
                         </span>
                       </div>
