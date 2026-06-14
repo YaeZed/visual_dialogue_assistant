@@ -1,149 +1,134 @@
 # AI 视觉对话助手
 
-手机优先的 AI 视觉对话助手 MVP。用户授权摄像头和麦克风后，可以用语音向 AI 询问当前画面内容；系统抓取当前视频帧，调用多模态模型生成回答，并通过字幕与浏览器 TTS 播放反馈。
+一个手机优先的 AI 视觉对话助手。用户打开页面后授权摄像头和麦克风，直接用语音询问眼前画面，系统会抓取当前视频帧，让多模态模型生成回答，并通过字幕和浏览器语音朗读反馈。
 
-## 核心流程
+项目重点不是做聊天记录系统，而是验证一个低成本、低操作负担的视觉问答闭环：看见当前画面、听到用户问题、给出可听可读的回答。
 
-1. 授权摄像头，进入全屏实时预览。
-2. 授权麦克风，通过 Web Speech API 识别问题。
-3. 抓取当前视频帧并压缩为 JPEG data URL。
-4. 前端把文字问题 + 当前图片发给本地后端代理。
-5. 后端代理读取 `.env` 中的 `AI_API_KEY`，调用 OpenAI-compatible 多模态接口。
-6. 展示 AI 回答，自动朗读并显示底部字幕。
-7. 当前页面内保留最近 4 轮文本上下文，刷新后清空。
+## 项目演示场景
 
-## 当前功能
+| 场景 | 用户操作 | 系统反馈 |
+|------|----------|----------|
+| 首次使用 | 点击“开始对话”并授权摄像头、麦克风 | 进入实时画面，Orb 显示当前状态 |
+| 语音提问 | 对着手机说出问题 | 自动识别问题、抓取当前画面并提交给 AI |
+| AI 思考 | 等待模型返回 | 视频区域显示思考遮罩和等待反馈 |
+| 回答播放 | AI 返回结果 | 展示回答、生成摘要、自动朗读并显示字幕 |
+| 继续追问 | 回答朗读结束后继续说话 | 自动进入追问聆听，复用最近上下文 |
+| 语音不可用 | 输入文本问题 | 使用文本问题和当前画面继续提问 |
+| 弱网使用 | 切换低清抓帧或重试 | 降低图片体积，失败后保留问题和画面 |
 
-- PR1: Vite + React + TypeScript 项目骨架
-- PR2: UI 基础，包含 Tailwind CSS、shadcn/ui 基础结构、Framer Motion
-- PR3: 手机调试环境，包含 HTTPS dev server、vConsole、ngrok 脚本
-- PR4: 摄像头模块，包含权限获取、全屏视频背景、失败重试反馈
-- PR5: 麦克风与语音识别，包含权限获取、Web Speech API、实时 transcript
-- PR6: 视频帧抓取，包含 canvas 截图、JPEG 压缩、抓帧元信息
-- PR7: API 层，封装 OpenAI-compatible 多模态请求
-- PR8: 多模态对话，支持图片帧 + 文字 -> AI 回答
-- PR9: 当前页面内存态多轮上下文
-- PR10: 截图提问兜底模式
-- PR11: Orb 状态机与动效
-- PR12: TTS 语音合成与字幕浮层
-- PR13: Orb 与对话系统状态整合
-- PR14: 手机触控栏与安全区适配
-- PR20: 前后端目录拆分 + 本地后端代理保管 AI API key
+## 核心功能
 
-## 本地开发
+| 模块 | 功能 | 说明 |
+|------|------|------|
+| 摄像头预览 | 后置摄像头实时画面 | 面向手机 Safari 的全屏视觉体验 |
+| 语音输入 | Web Speech API 识别问题 | 说完后自动进入抓帧提问流程 |
+| 文本兜底 | 显式文本问题输入 | 覆盖语音识别不可用或不方便说话的场景 |
+| 单帧抓取 | Canvas 截取当前视频帧 | 不上传连续视频流，降低带宽和模型成本 |
+| 抓帧模式 | 低清 / 高清两档 | 低清优先速度，高清优先细节识别 |
+| 多模态问答 | 图片帧 + 文本问题 | 通过本地后端代理调用 `qwen-vl-plus` |
+| Orb 状态机 | idle / listening / thinking / speaking | 用视觉状态告诉用户系统正在做什么 |
+| 语音回答 | 浏览器 TTS + 字幕 | 不额外生成音频文件，降低服务端成本 |
+| 自动追问 | 回答后继续聆听 | 15 秒无新语音时自动停止 |
+| 回答复用 | 摘要和复制全文 | 便于把回答粘贴到其他工具 |
+| 失败恢复 | 慢响应、失败重试、保留输入 | 弱网或 AI 失败时减少重复操作 |
+
+## 快速开始
+
+### 1. 安装依赖
 
 ```bash
 npm install
-copy .env.example .env
-npm run dev
-npm run build
 ```
 
-默认开发地址：
+### 2. 配置环境变量
 
-```text
-http://127.0.0.1:5173/
-```
-
-`npm run dev` 会同时启动：
-
-- 前端 Vite：`http://127.0.0.1:5173/`
-- 后端代理：`http://127.0.0.1:8787/`
-
-手机 Safari 调试需要 HTTPS：
+复制 `.env.example` 为 `.env`：
 
 ```bash
 copy .env.example .env
+```
+
+填写后端模型密钥：
+
+```env
+VITE_ENABLE_VCONSOLE=true
+BACKEND_HOST=127.0.0.1
+BACKEND_PORT=8787
+AI_API_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+AI_MODEL=qwen-vl-plus
+AI_API_KEY=your_dashscope_api_key
+```
+
+`AI_API_KEY` 只放在本地 `.env` 中，由 Node 后端代理读取。不要写入 `VITE_*` 前端变量、源码或浏览器存储。
+
+### 3. 启动开发服务
+
+```bash
 npm run dev
+```
+
+默认地址：
+
+| 服务 | 地址 |
+|------|------|
+| 前端 Vite | `http://127.0.0.1:5173/` |
+| 后端代理 | `http://127.0.0.1:8787/` |
+
+检查后端是否已读取 API key：
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8787/api/health
+```
+
+返回中应包含：
+
+```json
+{"ok":true,"model":"qwen-vl-plus","providerConfigured":true}
+```
+
+### 4. 手机 Safari 测试
+
+iOS Safari 调用摄像头和麦克风需要 HTTPS。先保持 `npm run dev` 运行，再开一个终端：
+
+```bash
 npm run tunnel
 ```
 
-`npm run tunnel` 依赖本机已安装并登录 ngrok。脚本会把本地 HTTP 开发服务通过 ngrok HTTPS 域名暴露给手机访问。
+脚本会通过 ngrok 暴露本地前端服务。将输出的 HTTPS 地址复制到手机 Safari 打开。
 
-## 环境变量
+如果 ngrok 提示 endpoint 已在线，说明已有隧道在运行。可以打开 `http://127.0.0.1:4040` 查看当前公网地址，或结束旧的 ngrok 进程后重试。
 
-复制 `.env.example` 为 `.env` 后按需修改：
+## 使用流程
 
-| 变量 | 默认值 | 说明 |
-| --- | --- | --- |
-| `VITE_ENABLE_VCONSOLE` | `false` | dev 模式是否注入 vConsole，方便手机查看日志 |
-| `BACKEND_HOST` | `127.0.0.1` | 本地后端代理监听地址 |
-| `BACKEND_PORT` | `8787` | 本地后端代理端口 |
-| `AI_API_BASE_URL` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | 后端代理调用的 OpenAI-compatible API base URL |
-| `AI_MODEL` | `qwen-vl-plus` | 多模态视觉模型 ID |
-| `AI_API_KEY` | 空 | 后端代理使用的模型 API key，不进入前端构建产物 |
+1. 手机 Safari 打开 ngrok HTTPS 地址。
+2. 点击“开始对话”。
+3. 允许摄像头和麦克风权限。
+4. 对着手机说出问题。
+5. 系统在语音稳定后自动抓取当前画面。
+6. 后端代理调用多模态模型生成回答。
+7. 页面展示回答摘要、完整回答和字幕，并朗读回答。
+8. 回答结束后可继续追问，或复制摘要/全文。
 
-API key 只放在本地 `.env` 的 `AI_API_KEY` 中，由 `backend/server.mjs` 读取。前端不再提供密钥输入框，也不会把密钥写入浏览器 JS、localStorage 或 sessionStorage。
+## 技术架构
 
-## 第三方依赖
-
-运行时依赖：
-
-| 依赖 | 用途 |
-| --- | --- |
-| React / React DOM | 前端 UI 渲染 |
-| Framer Motion | Orb、字幕和页面状态动效 |
-| lucide-react | 图标 |
-| @radix-ui/react-slot | shadcn/ui Button 组合能力 |
-| class-variance-authority | Button variant 管理 |
-| clsx | 条件 className 拼接 |
-| tailwind-merge | Tailwind class 合并 |
-
-开发依赖：
-
-| 依赖 | 用途 |
-| --- | --- |
-| Vite | 本地开发服务器与生产构建 |
-| TypeScript | 类型检查 |
-| Tailwind CSS / @tailwindcss/vite | 样式系统 |
-| @vitejs/plugin-react | React 编译支持 |
-| @vitejs/plugin-basic-ssl | 本地 HTTPS 开发服务器 |
-| vConsole | 手机浏览器调试面板 |
-| @types/node / @types/react / @types/react-dom | TypeScript 类型声明 |
-
-## 原创功能
-
-- 面向手机 Safari 的视觉对话体验设计。
-- 本地后端代理：把 AI API key 从浏览器侧移到 Node 进程中，降低演示链接泄露密钥的风险。
-- Orb 状态机：idle / listening / thinking / speaking 四态视觉反馈。
-- 单帧抓取式多模态对话，避免连续上传视频流，控制带宽和模型成本。
-- 当前页面内存态上下文：最多携带最近 4 轮文本问答，不持久化历史。
-- 截图提问兜底：用户不说话也可以点击预览画面触发视觉描述。
-- 浏览器端 TTS + 字幕浮层：不增加后端音频生成成本。
-- 移动端底部触控栏：把 Camera / Voice / Frame / Ask 固定到拇指区。
-
-## 验证方式
-
-基础验证：
-
-```bash
-npm run build
+```text
+手机 Safari
+  |
+  | 摄像头 / 麦克风 / Web Speech API
+  v
+Vite React 前端
+  |
+  | 当前问题 + 当前视频帧 JPEG data URL
+  v
+Node 本地后端代理
+  |
+  | AI_API_KEY 仅在服务端读取
+  v
+DashScope OpenAI-compatible API
+  |
+  v
+qwen-vl-plus 多模态回答
 ```
-
-浏览器验证：
-
-- 桌面访问 `http://127.0.0.1:5173/`，确认页面无 Vite error overlay。
-- 移动视口 `390x844` 和 `375x667`，确认无横向溢出。
-- 无摄像头/无麦克风环境下，确认失败反馈可见且不会暴露不可用的假入口。
-
-真机验证：
-
-- 使用 `npm run dev` 和 `npm run tunnel` 在手机 Safari 打开页面。
-- 授权摄像头和麦克风。
-- 验证语音识别、抓帧、AI 回答、TTS、字幕和底部触控栏。
-- 若看到“后端缺少 AI_API_KEY”，检查 `.env` 后重启 `npm run dev`。
-
-## 设计文档
-
-产品设计、用户故事、状态机和成本控制策略见 [docs/design.md](docs/design.md)。
-
-## MVP 边界
-
-- 不做登录。
-- 不做历史记录。
-- 不做长期上下文持久化。
-- 不连续上传视频流，只在需要时抓取单帧。
-- API key 只保留在本地 `.env` 和后端 Node 进程内，不进入前端构建产物。
 
 ## 目录结构
 
@@ -153,9 +138,9 @@ backend/
 
 frontend/
 ├── src/
-│   ├── components/
-│   ├── hooks/
-│   ├── lib/
+│   ├── components/     # 业务 UI 组件
+│   ├── hooks/          # 摄像头、抓帧、语音识别、TTS、AI 状态 hooks
+│   ├── lib/            # 前端 API client 与工具函数
 │   ├── App.tsx
 │   ├── main.tsx
 │   ├── styles.css
@@ -164,7 +149,114 @@ frontend/
 ├── vite.config.ts
 └── tsconfig.json
 
+docs/
+├── design.md
+├── product-design-summary.md
+├── e2e-device-test-checklist.md
+├── task_plan.md
+├── findings.md
+└── progress.md
+
 scripts/
 ├── dev.mjs             # 同时启动前端和后端
 └── start-ngrok.ps1     # 手机 HTTPS 隧道
 ```
+
+## 命令说明
+
+| 命令 | 用途 |
+|------|------|
+| `npm run dev` | 同时启动前端 Vite 和后端代理 |
+| `npm run dev:https` | 以 HTTPS 模式启动本地开发服务 |
+| `npm run tunnel` | 通过 ngrok 暴露前端地址给手机 Safari |
+| `npm run build` | TypeScript 检查并构建前端产物 |
+| `npm run preview` | 本地预览构建产物 |
+
+## 环境变量
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `VITE_ENABLE_VCONSOLE` | `false` | dev 模式是否注入 vConsole，方便手机查看日志 |
+| `BACKEND_HOST` | `127.0.0.1` | 本地后端代理监听地址 |
+| `BACKEND_PORT` | `8787` | 本地后端代理端口 |
+| `AI_API_BASE_URL` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | OpenAI-compatible API base URL |
+| `AI_MODEL` | `qwen-vl-plus` | 多模态视觉模型 ID |
+| `AI_API_KEY` | 空 | 后端代理使用的模型 API key |
+
+## 第三方依赖
+
+### 运行时依赖
+
+| 依赖 | 用途 |
+|------|------|
+| React / React DOM | 前端 UI 渲染 |
+| Framer Motion | Orb、遮罩、状态切换和字幕动效 |
+| lucide-react | 操作图标 |
+| @radix-ui/react-slot | shadcn/ui Button 组合能力 |
+| class-variance-authority | Button variant 管理 |
+| clsx | 条件 className 拼接 |
+| tailwind-merge | Tailwind class 合并 |
+
+### 开发依赖
+
+| 依赖 | 用途 |
+|------|------|
+| Vite | 本地开发服务器与生产构建 |
+| TypeScript | 类型检查 |
+| Tailwind CSS / @tailwindcss/vite | 样式系统 |
+| @vitejs/plugin-react | React 编译支持 |
+| @vitejs/plugin-basic-ssl | 本地 HTTPS 开发服务器 |
+| vConsole | 手机浏览器调试面板 |
+| @types/node / @types/react / @types/react-dom | TypeScript 类型声明 |
+
+## 原创功能说明
+
+- 手机 Safari 优先的视觉对话交互流程。
+- 本地后端代理保管 API key，前端不接触真实密钥。
+- Orb 四态状态机：待机、聆听、思考、说话。
+- 单帧抓取式多模态对话，避免连续上传视频流。
+- 低清/高清抓帧模式，在弱网速度和识别细节之间切换。
+- 回答后自动追问聆听，并在静默超时后停止。
+- 文本输入兜底，覆盖语音识别不可用的浏览器。
+- 回答摘要、复制摘要和复制全文。
+- 弱网慢响应提示和失败后保留问题/画面重试。
+- 端到端真机测试清单，覆盖 iOS Safari 权限和 ngrok 隧道。
+
+## 测试与验收
+
+基础回归：
+
+```bash
+npm run build
+```
+
+浏览器检查：
+
+- 桌面访问 `http://127.0.0.1:5173/`，确认页面无 Vite error overlay。
+- 移动视口 `390x844`，确认无横向溢出。
+- 无摄像头/无麦克风环境下，确认失败反馈可见且不会暴露不可用入口。
+
+真机检查：
+
+- 使用 `npm run dev` 和 `npm run tunnel` 在手机 Safari 打开页面。
+- 授权摄像头和麦克风。
+- 验证语音识别、自动抓帧、AI 回答、TTS、字幕、自动追问、文本兜底、低清/高清抓帧和复制功能。
+- 详细用例见 [docs/e2e-device-test-checklist.md](docs/e2e-device-test-checklist.md)。
+
+## 设计文档
+
+- [docs/product-design-summary.md](docs/product-design-summary.md)：功能计划与最终实现、运营成本控制思路和实际采用策略。
+- [docs/design.md](docs/design.md)：用户故事、状态机、交互路径和成本控制细节。
+- [docs/task_plan.md](docs/task_plan.md)、[docs/findings.md](docs/findings.md)、[docs/progress.md](docs/progress.md)：开发规划、过程发现和进度记录。
+
+## MVP 边界
+
+- 不做登录。
+- 不做历史记录。
+- 不做长期上下文持久化。
+- 不连续上传视频流，只在需要时抓取单帧。
+- API key 只保留在本地 `.env` 和后端 Node 进程内。
+
+## License
+
+本项目暂未声明开源许可证。

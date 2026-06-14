@@ -21,7 +21,12 @@
 ## 目录结构约定
 ```
 docs/
-├── design.md         # 产品设计说明、用户故事、成本控制策略
+├── design.md                  # 产品设计说明、用户故事、成本控制策略
+├── product-design-summary.md  # 功能计划、最终实现与运营成本控制总结
+├── e2e-device-test-checklist.md
+├── task_plan.md               # 开发规划与 PR 拆分
+├── findings.md                # 过程发现与决策依据
+└── progress.md                # 阶段进度与验证记录
 
 backend/
 └── server.mjs         # 本地 AI API 代理，读取 AI_API_KEY
@@ -48,7 +53,7 @@ scripts/
 └── start-ngrok.ps1
 ```
 
-新增项目级文档放在 `docs/`，文件名使用短横线或语义名，优先服务评审复现和后续维护；临时排查材料不进入 `docs/`。
+新增项目级文档和长期过程记录放在 `docs/`，文件名使用短横线或语义名，优先服务评审复现和后续维护；临时排查材料不进入 `docs/`。
 前端源码只放在 `frontend/src/`，后端源码只放在 `backend/`；根目录不再新增 `src/`。
 API key 只放在本地 `.env` 的 `AI_API_KEY`，由后端代理读取，禁止写入 `VITE_*` 前端变量、源码或浏览器存储。
 
