@@ -57,6 +57,7 @@
 | Vite `VITE_*` 环境变量不适合保存真实 API key | PR20 增加本地 Node 后端代理，前端只请求 `/api/vision-chat`，后端从 `.env` 读取 `AI_API_KEY` 后调用 DashScope |
 | 语音入口不应拆成麦克风授权和语音识别两个按钮 | PR21 用单个“开始对话”动作串联麦克风授权与 Web Speech 识别；失败文案仍区分麦克风权限和浏览器语音识别能力 |
 | 视觉问答默认路径应自动抓帧并提问 | PR21 在最终语音文本稳定后等待短暂静默，自动抓取当前帧并调用 `askVisionQuestion`；手动抓帧/提问按钮保留为兜底 |
+| AI 请求等待期需要占据主视觉区域 | PR22 在视频区域叠加半透明遮罩和居中 thinking Orb，让用户明确系统已进入理解画面/生成回答阶段 |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl

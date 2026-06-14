@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Camera, CameraOff, Image, Mic, Send, Sparkles, Square, Volume2 } from "lucide-react";
 import { Caption } from "@/components/Caption";
 import { DialogueStatus, type DialogueSignalState, type DialogueTone } from "@/components/DialogueStatus";
@@ -590,6 +590,31 @@ function App() {
             </div>
           )}
 
+          <AnimatePresence>
+            {isReady && isThinking && (
+              <motion.div
+                aria-live="polite"
+                className="pointer-events-none absolute inset-0 z-20 grid place-items-center bg-background/58 px-6 text-center backdrop-blur-[2px]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <div className="grid justify-items-center gap-4">
+                  <Orb className="size-[min(42vw,180px)]" size="lg" state="thinking" />
+                  <div className="grid gap-1">
+                    <p className="m-0 text-base font-bold text-amber-100 md:text-lg">
+                      正在理解画面
+                    </p>
+                    <p className="m-0 max-w-[18rem] text-sm leading-relaxed text-slate-200">
+                      已收到问题和当前画面，正在生成回答。
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {!isReady && (
             <div className="relative self-center justify-self-center aspect-square w-[min(62vw,280px)]">
               <div className="absolute inset-0 rounded-full border border-slate-200/50" />
@@ -606,7 +631,7 @@ function App() {
           )}
 
           <div
-            className="absolute bottom-3.5 left-3.5 right-3.5 flex min-h-11 items-center gap-2.5 rounded-card border border-panel-border bg-background/72 px-3.5 text-sm text-slate-300 backdrop-blur-md"
+            className="absolute bottom-3.5 left-3.5 right-3.5 z-30 flex min-h-11 items-center gap-2.5 rounded-card border border-panel-border bg-background/72 px-3.5 text-sm text-slate-300 backdrop-blur-md"
             aria-live="polite"
           >
             <span className={getStatusDotClass(cameraCopy.tone)} />

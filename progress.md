@@ -517,3 +517,28 @@
 | Browser desktop DOM | `http://127.0.0.1:5173/` | one voice entry, no old split mic/listen buttons | `开始对话` present; old split buttons absent | passed |
 | Browser mobile check | viewport 390x844 | no horizontal overflow; bottom bar buttons visible | `scrollWidth=375`, buttons `摄像头/对话/画面/提问` visible | passed |
 | Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
+
+### PR22: AI 思考时沉浸式等待体验
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P1 优先级选择等待体验优化，避免继续扩大自动链路范围
+  - 在摄像头已开启且 AI 请求进行中时，为视频区域增加半透明深色遮罩
+  - 将 thinking 状态 Orb 放大并居中展示，配合“正在理解画面 / 正在生成回答”文案
+  - 用 `AnimatePresence` 保持遮罩淡入淡出，底部状态条维持在遮罩上方
+- Files modified:
+  - frontend/src/App.tsx
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR22
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop DOM | `http://127.0.0.1:5173/` | no Vite overlay after dev server restart | page rendered normal controls | passed |
+| Browser mobile check | viewport 390x844 | no horizontal overflow; bottom bar buttons visible | `scrollWidth=375`, buttons visible | passed |
+| Browser console | warning/error logs | no app runtime errors | empty warning/error list | passed |
+| Browser screenshot | viewport screenshot | visual artifact captured | browser screenshot command timed out | blocked |
