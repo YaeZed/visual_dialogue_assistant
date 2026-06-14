@@ -542,3 +542,29 @@
 | Browser mobile check | viewport 390x844 | no horizontal overflow; bottom bar buttons visible | `scrollWidth=375`, buttons visible | passed |
 | Browser console | warning/error logs | no app runtime errors | empty warning/error list | passed |
 | Browser screenshot | viewport screenshot | visual artifact captured | browser screenshot command timed out | blocked |
+
+### PR23: Orb 首屏视觉权重与首次启动引导
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P1 继续优化 Orb 首屏引导，不改摄像头/麦克风权限流程
+  - 摄像头未开启时，将 Orb 放大并居中展示在主视觉区
+  - 在主视觉区增加单一大按钮“开启摄像头”，作为首屏主要行动入口
+  - 摄像头未开启时，右侧面板不再重复显示第二个摄像头按钮，只提示下一步
+  - 摄像头开启后，右上角 Orb 从 64px 提升到 88px，增强状态可见性
+  - 将首屏主按钮文案调整为“开始对话”，底层仍先请求摄像头权限以保持 iOS Safari 权限链路稳定
+  - 摄像头未开启时隐藏语音、抓帧和 AI 面板，并禁用移动底栏后续动作，避免首屏出现多条可点路径
+- Files modified:
+  - frontend/src/App.tsx
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR23
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser mobile check | viewport 390x844 | one primary start button; no horizontal overflow | `scrollWidth=375`; main `开始对话` enabled; later actions disabled | passed |
+| Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |

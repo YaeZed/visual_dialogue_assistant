@@ -579,7 +579,7 @@ function App() {
 
           {isReady && (
             <div className="pointer-events-none absolute right-4 top-4 z-10 grid w-[min(78vw,290px)] justify-items-end gap-2">
-              <Orb size="sm" state={orbState} />
+              <Orb className="size-[88px]" size="sm" state={orbState} />
               <DialogueStatus
                 detail={dialogueDetail}
                 signals={dialogueSignals}
@@ -616,17 +616,31 @@ function App() {
           </AnimatePresence>
 
           {!isReady && (
-            <div className="relative self-center justify-self-center aspect-square w-[min(62vw,280px)]">
-              <div className="absolute inset-0 rounded-full border border-slate-200/50" />
-              <div className="absolute inset-[18%] rounded-full border border-accent/45" />
-              <div className="absolute inset-[36%] grid place-items-center rounded-full border border-accent/45 bg-accent/12 shadow-[0_0_42px_rgba(45,212,191,0.32)]">
-                {cameraCopy.tone === "error" ? (
-                  <CameraOff className="size-10 text-warning" aria-hidden="true" />
-                ) : (
-                  <Orb size="sm" state={orbState} />
-                )}
+            <div className="relative grid self-center justify-self-center justify-items-center gap-5 px-5 pb-14 text-center">
+              <div className="relative aspect-square w-[min(66vw,300px)]">
+                <div className="absolute inset-0 rounded-full border border-slate-200/35" />
+                <div className="absolute inset-[12%] rounded-full border border-accent/35" />
+                <div className="absolute inset-[24%] rounded-full border border-accent/35" />
+                <div className="absolute inset-0 grid place-items-center">
+                  {cameraCopy.tone === "error" ? (
+                    <div className="grid size-[min(42vw,180px)] place-items-center rounded-full border border-warning/45 bg-warning/10 shadow-[0_0_42px_rgba(248,196,93,0.24)]">
+                      <CameraOff className="size-14 text-warning" aria-hidden="true" />
+                    </div>
+                  ) : (
+                    <Orb className="size-[min(48vw,220px)]" size="lg" state={orbState} />
+                  )}
+                </div>
+                <div className="scan-line absolute left-[12%] top-[18%] h-0.5 w-[76%] bg-accent shadow-[0_0_18px_rgba(94,234,212,0.7)]" />
               </div>
-              <div className="scan-line absolute left-[12%] top-[18%] h-0.5 w-[76%] bg-accent shadow-[0_0_18px_rgba(94,234,212,0.7)]" />
+              <Button
+                className="min-h-[56px] w-[min(78vw,320px)] text-base shadow-[0_18px_48px_rgba(94,234,212,0.18)]"
+                disabled={status === "requesting"}
+                onClick={startCamera}
+                type="button"
+              >
+                <Camera aria-hidden="true" className="size-5" />
+                {status === "requesting" ? cameraCopy.action : "开始对话"}
+              </Button>
             </div>
           )}
 
@@ -681,16 +695,7 @@ function App() {
           </div>
 
           <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
-            <Button
-              className="min-h-[54px] text-base"
-              disabled={status === "requesting" || isReady}
-              onClick={startCamera}
-              type="button"
-            >
-              <Camera aria-hidden="true" className="size-5" />
-              {cameraCopy.action}
-            </Button>
-            {isReady && (
+            {isReady ? (
               <Button
                 className="min-h-[50px]"
                 onClick={stopCamera}
@@ -700,176 +705,184 @@ function App() {
                 <CameraOff aria-hidden="true" className="size-5" />
                 关闭摄像头
               </Button>
+            ) : (
+              <div className="rounded-card border border-panel-border bg-white/6 p-3 text-sm leading-relaxed text-slate-300">
+                点击主按钮后先允许摄像头访问，随后说出你的问题。
+              </div>
             )}
           </div>
 
-          <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
-            <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
-              <span className={getStatusDotClass(voiceStatusTone)} />
-              <span>{voiceStatusMessage}</span>
-            </div>
+          {isReady && (
+            <>
+              <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
+                <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
+                  <span className={getStatusDotClass(voiceStatusTone)} />
+                  <span>{voiceStatusMessage}</span>
+                </div>
 
-            <Button
-              disabled={!isSpeechSupported || isVoiceBusy}
-              onClick={handleStartVoiceConversation}
-              type="button"
-              variant={isListening ? "default" : "secondary"}
-            >
-              <Mic aria-hidden="true" className="size-5" />
-              {voiceAction}
-            </Button>
-
-            <div className="min-h-16 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
-              {spokenText ? (
-                <p className="m-0">{spokenText}</p>
-              ) : fallbackQuestionText ? (
-                <p className="m-0">{fallbackQuestionText}</p>
-              ) : (
-                <p className="m-0 text-muted">识别到的语音会显示在这里。</p>
-              )}
-            </div>
-
-            {(transcript || fallbackQuestion) && (
-              <Button
-                onClick={() => {
-                  clearTranscript();
-                  setFallbackQuestion("");
-                }}
-                size="sm"
-                type="button"
-                variant="ghost"
-              >
-                清空问题
-              </Button>
-            )}
-          </section>
-
-          <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
-            <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
-              <span
-                className={getStatusDotClass(
-                  frameStatus === "capturing" ? "active" : frame ? "ready" : frameError ? "error" : "idle",
-                )}
-              />
-              <span>
-                {frameStatus === "capturing"
-                  ? "正在抓取当前画面"
-                  : frame
-                    ? `画面已就绪：${frame.width}x${frame.height}，${frame.sizeKb} KB`
-                    : frameError ?? "问题准备好后，抓取一帧画面。"}
-              </span>
-            </div>
-
-            <Button
-              disabled={!canCaptureFrame}
-              onClick={handleCaptureFrame}
-              type="button"
-              variant="secondary"
-            >
-              <Image aria-hidden="true" className="size-5" />
-              {frameStatus === "capturing" ? "抓取中..." : "抓取画面"}
-            </Button>
-
-            {frame && (
-              <div className="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-card border border-panel-border bg-background/50 p-2 text-xs text-slate-300">
-                <img
-                  alt="已抓取画面预览"
-                  className="h-12 w-16 rounded-card object-cover"
-                  src={frame.dataUrl}
-                />
-                <span>{new Date(frame.capturedAt).toLocaleTimeString()}</span>
-                <Button onClick={clearFrame} size="sm" type="button" variant="ghost">
-                  清除
-                </Button>
-              </div>
-            )}
-          </section>
-
-          <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
-            <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
-              <span
-                className={getStatusDotClass(
-                  isThinking || isSpeaking ? "active" : answer ? "ready" : aiError || synthesisError ? "error" : "idle",
-                )}
-              />
-              <span>
-                {isThinking
-                  ? "正在结合画面思考"
-                  : isSpeaking
-                    ? "正在朗读 AI 回答"
-                  : answer
-                    ? model
-                      ? `AI 回答已生成，模型：${model}`
-                      : "AI 回答已生成"
-                    : aiError ?? synthesisError ?? "准备问题并抓取画面后即可提问。"}
-              </span>
-            </div>
-
-            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
-              <Button
-                disabled={!canAskAi}
-                onClick={handleAskAi}
-                type="button"
-              >
-                <Send aria-hidden="true" className="size-5" />
-                {isThinking ? "提问中..." : "提问 AI"}
-              </Button>
-              {isThinking ? (
-                <Button onClick={cancelRequest} type="button" variant="secondary">
-                  取消
-                </Button>
-              ) : (
-                answer && (
-                  <Button onClick={clearAnswer} type="button" variant="ghost">
-                    清空回答
-                  </Button>
-                )
-              )}
-            </div>
-
-            {answer && (
-              <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
                 <Button
-                  disabled={synthesisStatus === "unsupported"}
-                  onClick={() => speak(answer)}
+                  disabled={!isSpeechSupported || isVoiceBusy}
+                  onClick={handleStartVoiceConversation}
+                  type="button"
+                  variant={isListening ? "default" : "secondary"}
+                >
+                  <Mic aria-hidden="true" className="size-5" />
+                  {voiceAction}
+                </Button>
+
+                <div className="min-h-16 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
+                  {spokenText ? (
+                    <p className="m-0">{spokenText}</p>
+                  ) : fallbackQuestionText ? (
+                    <p className="m-0">{fallbackQuestionText}</p>
+                  ) : (
+                    <p className="m-0 text-muted">识别到的语音会显示在这里。</p>
+                  )}
+                </div>
+
+                {(transcript || fallbackQuestion) && (
+                  <Button
+                    onClick={() => {
+                      clearTranscript();
+                      setFallbackQuestion("");
+                    }}
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    清空问题
+                  </Button>
+                )}
+              </section>
+
+              <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
+                <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
+                  <span
+                    className={getStatusDotClass(
+                      frameStatus === "capturing" ? "active" : frame ? "ready" : frameError ? "error" : "idle",
+                    )}
+                  />
+                  <span>
+                    {frameStatus === "capturing"
+                      ? "正在抓取当前画面"
+                      : frame
+                        ? `画面已就绪：${frame.width}x${frame.height}，${frame.sizeKb} KB`
+                        : frameError ?? "问题准备好后，抓取一帧画面。"}
+                  </span>
+                </div>
+
+                <Button
+                  disabled={!canCaptureFrame}
+                  onClick={handleCaptureFrame}
                   type="button"
                   variant="secondary"
                 >
-                  <Volume2 aria-hidden="true" className="size-5" />
-                  重播回答
+                  <Image aria-hidden="true" className="size-5" />
+                  {frameStatus === "capturing" ? "抓取中..." : "抓取画面"}
                 </Button>
-                <Button disabled={!isSpeaking} onClick={stop} type="button" variant="ghost">
-                  <Square aria-hidden="true" className="size-4" />
-                  停止朗读
-                </Button>
-              </div>
-            )}
 
-            <div className="min-h-20 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
-              {answer ? (
-                <p className="m-0 leading-relaxed">{answer}</p>
-              ) : (
-                <p className="m-0 text-muted">AI 回答会显示在这里。</p>
-              )}
-            </div>
-
-            <div className="grid gap-2 rounded-card border border-panel-border bg-background/35 p-3 text-xs text-slate-300">
-              <div className="flex items-center justify-between gap-3">
-                <span>本页上下文：{turns.length} 轮</span>
-                {turns.length > 0 && (
-                  <Button onClick={clearContext} size="sm" type="button" variant="ghost">
-                    清空上下文
-                  </Button>
+                {frame && (
+                  <div className="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-card border border-panel-border bg-background/50 p-2 text-xs text-slate-300">
+                    <img
+                      alt="已抓取画面预览"
+                      className="h-12 w-16 rounded-card object-cover"
+                      src={frame.dataUrl}
+                    />
+                    <span>{new Date(frame.capturedAt).toLocaleTimeString()}</span>
+                    <Button onClick={clearFrame} size="sm" type="button" variant="ghost">
+                      清除
+                    </Button>
+                  </div>
                 )}
-              </div>
-              {turns.slice(-2).map((turn) => (
-                <div className="grid gap-1 border-t border-panel-border pt-2" key={turn.id}>
-                  <p className="m-0 text-slate-400">问：{turn.question}</p>
-                  <p className="m-0 text-slate-200">答：{turn.answer}</p>
+              </section>
+
+              <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
+                <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
+                  <span
+                    className={getStatusDotClass(
+                      isThinking || isSpeaking ? "active" : answer ? "ready" : aiError || synthesisError ? "error" : "idle",
+                    )}
+                  />
+                  <span>
+                    {isThinking
+                      ? "正在结合画面思考"
+                      : isSpeaking
+                        ? "正在朗读 AI 回答"
+                      : answer
+                        ? model
+                          ? `AI 回答已生成，模型：${model}`
+                          : "AI 回答已生成"
+                        : aiError ?? synthesisError ?? "准备问题并抓取画面后即可提问。"}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </section>
+
+                <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+                  <Button
+                    disabled={!canAskAi}
+                    onClick={handleAskAi}
+                    type="button"
+                  >
+                    <Send aria-hidden="true" className="size-5" />
+                    {isThinking ? "提问中..." : "提问 AI"}
+                  </Button>
+                  {isThinking ? (
+                    <Button onClick={cancelRequest} type="button" variant="secondary">
+                      取消
+                    </Button>
+                  ) : (
+                    answer && (
+                      <Button onClick={clearAnswer} type="button" variant="ghost">
+                        清空回答
+                      </Button>
+                    )
+                  )}
+                </div>
+
+                {answer && (
+                  <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
+                    <Button
+                      disabled={synthesisStatus === "unsupported"}
+                      onClick={() => speak(answer)}
+                      type="button"
+                      variant="secondary"
+                    >
+                      <Volume2 aria-hidden="true" className="size-5" />
+                      重播回答
+                    </Button>
+                    <Button disabled={!isSpeaking} onClick={stop} type="button" variant="ghost">
+                      <Square aria-hidden="true" className="size-4" />
+                      停止朗读
+                    </Button>
+                  </div>
+                )}
+
+                <div className="min-h-20 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
+                  {answer ? (
+                    <p className="m-0 leading-relaxed">{answer}</p>
+                  ) : (
+                    <p className="m-0 text-muted">AI 回答会显示在这里。</p>
+                  )}
+                </div>
+
+                <div className="grid gap-2 rounded-card border border-panel-border bg-background/35 p-3 text-xs text-slate-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>本页上下文：{turns.length} 轮</span>
+                    {turns.length > 0 && (
+                      <Button onClick={clearContext} size="sm" type="button" variant="ghost">
+                        清空上下文
+                      </Button>
+                    )}
+                  </div>
+                  {turns.slice(-2).map((turn) => (
+                    <div className="grid gap-1 border-t border-panel-border pt-2" key={turn.id}>
+                      <p className="m-0 text-slate-400">问：{turn.question}</p>
+                      <p className="m-0 text-slate-200">答：{turn.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
         </motion.div>
       </section>
       <Caption
@@ -885,7 +898,7 @@ function App() {
         isCameraReady={isReady}
         isListening={isListening}
         isVoiceBusy={isVoiceBusy}
-        isSpeechReady={isSpeechSupported}
+        isSpeechReady={isReady && isSpeechSupported}
         isThinking={isThinking}
         onAskAi={handleAskAi}
         onCaptureFrame={handleCaptureFrame}
