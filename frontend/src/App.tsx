@@ -386,6 +386,7 @@ function App() {
     completedUtterance,
     errorMessage: synthesisError,
     isSpeaking,
+    prime,
     speak,
     stop,
   } = useSpeechSynthesis();
@@ -584,6 +585,7 @@ function App() {
   };
 
   const handleStartVoiceConversation = async () => {
+    prime();
     setIsFollowUpListening(false);
 
     if (isListening) {
@@ -606,6 +608,11 @@ function App() {
     }
 
     startListening();
+  };
+
+  const handleStartCamera = () => {
+    prime();
+    void startCamera();
   };
 
   useEffect(() => {
@@ -856,7 +863,7 @@ function App() {
               <Button
                 className="min-h-[56px] w-[min(78vw,320px)] text-base shadow-[0_18px_48px_rgba(94,234,212,0.18)]"
                 disabled={status === "requesting"}
-                onClick={startCamera}
+                onClick={handleStartCamera}
                 type="button"
               >
                 <Camera aria-hidden="true" className="size-5" />
@@ -1263,7 +1270,7 @@ function App() {
         isThinking={isThinking}
         onAskAi={handleAskAi}
         onCaptureFrame={handleCaptureFrame}
-        onStartCamera={startCamera}
+        onStartCamera={handleStartCamera}
         onVoiceToggle={handleStartVoiceConversation}
         voiceAction={voiceAction}
       />

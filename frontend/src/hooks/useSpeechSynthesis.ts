@@ -21,6 +21,7 @@ const initialState: SpeechSynthesisState = {
 
 const captionMaxLength = 110;
 const sentenceBoundaries = ["。", "！", "？", ".", "!", "?", "\n"];
+const warmupText = " ";
 
 function isChineseText(text: string) {
   return /[\u4e00-\u9fff]/.test(text);
@@ -75,6 +76,7 @@ function getCaptionSegment(text: string, charIndex: number) {
 export function useSpeechSynthesis() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const completionIdRef = useRef(0);
+  const isPrimedRef = useRef(false);
   const [state, setState] = useState<SpeechSynthesisState>(initialState);
   const [completedUtterance, setCompletedUtterance] = useState<CompletedUtterance | null>(null);
   const isSupported = useMemo(
@@ -95,6 +97,24 @@ export function useSpeechSynthesis() {
     setState(initialState);
   }, [isSupported]);
 
+  const prime = useCallback(() => {
+    if (!isSupported || isPrimedRef.current) {
+      return;
+    }
+
+    try {
+      const utterance = new SpeechSynthesisUtterance(warmupText);
+      utterance.volume = 0;
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+      window.speechSynthesis.cancel();
+      isPrimedRef.current = true;
+    } catch {
+      // Some browsers reject silent warmup; explicit replay remains available.
+    }
+  }, [isSupported]);
+
   const speak = useCallback(
     (text: string) => {
       const nextText = text.trim();
@@ -113,6 +133,7 @@ export function useSpeechSynthesis() {
       }
 
       window.speechSynthesis.cancel();
+      isPrimedRef.current = true;
 
       const utterance = new SpeechSynthesisUtterance(nextText);
       utterance.lang = isChineseText(nextText) ? "zh-CN" : "en-US";
@@ -191,6 +212,7 @@ export function useSpeechSynthesis() {
     isSupported,
     isSpeaking: state.status === "speaking",
     completedUtterance,
+    prime,
     speak,
     stop,
   };
