@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 6 / PR27
+Phase 6 / PR28
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -70,6 +70,7 @@ Phase 6 / PR27
 | PR25 | P3 回答后自动进入追问聆听，并在静默 15 秒后停止 | PR24 |
 | PR26 | P3 弱网慢响应提示：AI 请求超过 8 秒显示等待反馈 | PR25 |
 | PR27 | P3 弱网抓帧压缩：自适应降低 JPEG 体积到约 40KB | PR26 |
+| PR28 | P3 AI 请求失败恢复：明确保留问题和画面并引导重试 | PR27 |
 
 ## Decisions Made
 | Decision | Rationale |

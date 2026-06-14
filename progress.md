@@ -640,6 +640,29 @@
 | Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay; primary start entry visible | passed; console warning/error list empty | passed |
 | Real camera compression | camera capture on Safari/device | compressed frame near 40KB when possible | desktop environment has no camera permission path | blocked |
 
+### PR28: AI 请求失败恢复提示
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P3 弱网失败恢复继续拆分，本次只优化失败反馈，不改 AI 请求生命周期。
+  - 当 AI 请求失败且当前问题与画面仍满足重试条件时，右上状态卡提示“已保留问题和画面，可直接重试”。
+  - 右侧当前步骤面板标题改为“提问失败，可直接重试”，详情说明已保留当前问题和画面。
+  - 复用既有“重试提问 AI”按钮，避免新增第二条重试路径。
+- Files modified:
+  - frontend/src/App.tsx
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR28
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay; primary start entry visible | passed; console warning/error list empty | passed |
+| AI error retry copy | failed AI request with retained frame/question | copy says input is retained and retry is available | requires real camera/AI failure path | blocked |
+
 ### PR25: 回答后自动追问聆听
 - **Status:** ready_for_pr
 - Actions taken:
