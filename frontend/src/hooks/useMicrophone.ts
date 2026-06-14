@@ -63,14 +63,17 @@ export function useMicrophone() {
         status: "unavailable",
         errorMessage: "当前浏览器不支持麦克风访问。",
       });
-      return;
+      return false;
+    }
+
+    if (streamRef.current) {
+      setMicrophoneState({ status: "ready", errorMessage: null });
+      return true;
     }
 
     setMicrophoneState({ status: "requesting", errorMessage: null });
 
     try {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -82,10 +85,12 @@ export function useMicrophone() {
 
       streamRef.current = stream;
       setMicrophoneState({ status: "ready", errorMessage: null });
+      return true;
     } catch (error) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
       setMicrophoneState(getMicrophoneError(error));
+      return false;
     }
   }, []);
 
