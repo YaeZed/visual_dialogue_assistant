@@ -686,6 +686,31 @@
 | Browser mobile check | viewport 390x844 | no horizontal overflow; one primary start entry; downstream actions disabled before camera | `scrollWidth=375`; main `开始对话` count 1; `对话/画面/提问` disabled | passed |
 | Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
 
+### Documentation structure cleanup: move process docs into `docs/`
+- **Status:** complete
+- Actions taken:
+  - Moved long-lived process documents from the repository root into `docs/`:
+    - `docs/task_plan.md`
+    - `docs/findings.md`
+    - `docs/progress.md`
+  - Updated README directory structure and design-document links to include the moved process docs.
+  - Updated `CODEX.md` and `agents.md` directory conventions so future project-level docs and long-lived process records stay under `docs/`.
+  - Logged the structure decision in `docs/task_plan.md` and `docs/findings.md`.
+- Files modified:
+  - README.md
+  - CODEX.md
+  - agents.md
+  - docs/task_plan.md
+  - docs/findings.md
+  - docs/progress.md
+
+## Test Results: Documentation structure cleanup
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Root process docs check | root `task_plan.md`, `findings.md`, `progress.md`, `progess.md` | no matching root files | no matching root files | passed |
+| Reference check | README, CODEX, agents, docs | public references point to `docs/` locations; historical progress entries may keep original names | README links point to `docs/`; CODEX and agents directory trees list the moved files | passed |
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+
 ### PR26: 弱网慢响应提示
 - **Status:** ready_for_pr
 - Actions taken:
