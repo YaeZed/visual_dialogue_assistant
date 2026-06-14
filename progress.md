@@ -568,6 +568,25 @@
 | Browser mobile viewport | viewport 390x844 | no horizontal overflow; bottom actions visible | `scrollWidth=375`, `clientWidth=375`, 4 mobile actions visible | passed |
 | Real capture mode switch | camera ready on Safari/device | low/high mode changes next captured frame size and metadata | desktop environment has no camera permission path | blocked |
 
+### PR32: 端到端真机测试清单
+- **Status:** ready_for_pr
+- Actions taken:
+  - 新增 `docs/e2e-device-test-checklist.md`，不修改当前已有本地改动的 `docs/design.md`。
+  - 按真机执行顺序覆盖基础连通性、权限、首轮对话、追问上下文、文本输入兜底、抓帧模式、弱网失败恢复和回答复用。
+  - 增加环境记录表和通过标准，明确桌面无法替代的 iOS Safari / ngrok / 摄像头 / 麦克风验证项。
+- Files modified:
+  - docs/e2e-device-test-checklist.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR32
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` scoped to PR32 files | no whitespace errors | passed; only CRLF warnings | passed |
+| Checklist coverage review | read `docs/e2e-device-test-checklist.md` | covers iOS Safari, ngrok, permissions, weak network, retry, text fallback, capture mode, copy | covered in E2E-01 through E2E-35 | passed |
+| Frontend regression | PR30/PR31 build and browser checks | code changes already validated before docs-only PR32 | TypeScript, Vite, HTTP, desktop and mobile viewport checks passed before PR32 | passed |
+
 ### PR29: 显式文本问题输入
 - **Status:** ready_for_pr
 - Actions taken:

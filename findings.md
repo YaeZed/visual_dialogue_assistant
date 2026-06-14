@@ -67,6 +67,7 @@
 | 文本输入应是语音 fallback，而不是第二套对话系统 | PR29 在当前步骤卡片内加入文本问题输入，继续复用 `questionText`、抓帧、`askVisionQuestion` 和既有重试逻辑 |
 | 回答复制应服务复用，不应增加模型请求 | PR30 用本地摘要规则生成短摘要，并通过 Clipboard API 复制摘要/全文，失败时提示手动复制 |
 | 抓帧清晰度是用户可理解的成本旋钮 | PR31 提供低清/高清两档，低清优先速度和弱网成功率，高清优先文字、小物体和复杂画面的识别细节 |
+| 真机测试要覆盖桌面无法证明的链路 | PR32 独立列出 iOS Safari 权限、ngrok HTTPS、真实摄像头/麦克风、弱网、重试、复制和多轮追问用例 |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl
