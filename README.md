@@ -4,6 +4,12 @@
 
 项目重点不是做聊天记录系统，而是验证一个低成本、低操作负担的视觉问答闭环：看见当前画面、听到用户问题、给出可听可读的回答。
 
+## 设计文档
+
+- [docs/product-design-summary.md](docs/product-design-summary.md)：功能计划与最终实现、运营成本控制思路和实际采用策略。
+- [docs/design.md](docs/design.md)：用户故事、状态机、交互路径和成本控制细节。
+- [docs/task_plan.md](docs/task_plan.md)、[docs/findings.md](docs/findings.md)、[docs/progress.md](docs/progress.md)：开发规划、过程发现和进度记录。
+
 ## 项目演示场景
 
 | 场景 | 用户操作 | 系统反馈 |
@@ -243,20 +249,4 @@ npm run build
 - 验证语音识别、自动抓帧、AI 回答、TTS、字幕、自动追问、文本兜底、低清/高清抓帧和复制功能。
 - 详细用例见 [docs/e2e-device-test-checklist.md](docs/e2e-device-test-checklist.md)。
 
-## 设计文档
 
-- [docs/product-design-summary.md](docs/product-design-summary.md)：功能计划与最终实现、运营成本控制思路和实际采用策略。
-- [docs/design.md](docs/design.md)：用户故事、状态机、交互路径和成本控制细节。
-- [docs/task_plan.md](docs/task_plan.md)、[docs/findings.md](docs/findings.md)、[docs/progress.md](docs/progress.md)：开发规划、过程发现和进度记录。
-
-## MVP 边界
-
-- 不做登录。
-- 不做历史记录。
-- 不做长期上下文持久化。
-- 不连续上传视频流，只在需要时抓取单帧。
-- API key 只保留在本地 `.env` 和后端 Node 进程内。
-
-## License
-
-本项目暂未声明开源许可证。
