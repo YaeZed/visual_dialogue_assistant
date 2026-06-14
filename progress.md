@@ -616,6 +616,30 @@
 | Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay; primary start entry visible | passed at current desktop viewport; only reduced-motion Framer Motion warning | passed |
 | Browser mobile viewport | viewport 390x844 | no horizontal overflow | Browser viewport override stayed at desktop width `1280`; no Playwright dependency in project for fallback | blocked |
 
+### PR27: 弱网抓帧自适应压缩
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P3 弱网体验继续拆分，本次只处理抓帧上传体积，不改重试和请求状态。
+  - 将抓帧从原始视频尺寸 + 固定 JPEG quality 0.62 改为自适应压缩。
+  - 先限制长边到 1280，再按 0.5 / 0.45 / 0.4 质量尝试；必要时降到 960 或 720 长边。
+  - 优先返回 40KB 以内的 JPEG；若仍超过目标，返回尝试结果里体积最小的一版。
+  - `CapturedFrame.width/height/sizeKb` 现在记录实际上传帧尺寸和大小，方便用户看到压缩后的体积。
+- Files modified:
+  - frontend/src/hooks/useFrameCapture.ts
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR27
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay; primary start entry visible | passed; console warning/error list empty | passed |
+| Real camera compression | camera capture on Safari/device | compressed frame near 40KB when possible | desktop environment has no camera permission path | blocked |
+
 ### PR25: 回答后自动追问聆听
 - **Status:** ready_for_pr
 - Actions taken:

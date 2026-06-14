@@ -23,6 +23,21 @@ const initialState: FrameCaptureState = {
   errorMessage: null,
 };
 
+const targetFrameSizeKb = 40;
+const compressionAttempts = [
+  { maxLongEdge: 1280, quality: 0.5 },
+  { maxLongEdge: 1280, quality: 0.45 },
+  { maxLongEdge: 960, quality: 0.45 },
+  { maxLongEdge: 960, quality: 0.4 },
+  { maxLongEdge: 720, quality: 0.4 },
+];
+
+interface CompressionResult {
+  blob: Blob;
+  width: number;
+  height: number;
+}
+
 function blobToDataUrl(blob: Blob) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -49,10 +64,66 @@ function canvasToJpegBlob(canvas: HTMLCanvasElement, quality: number) {
   });
 }
 
+function getScaledFrameSize(width: number, height: number, maxLongEdge: number) {
+  const longEdge = Math.max(width, height);
+
+  if (longEdge <= maxLongEdge) {
+    return { width, height };
+  }
+
+  const scale = maxLongEdge / longEdge;
+
+  return {
+    width: Math.round(width * scale),
+    height: Math.round(height * scale),
+  };
+}
+
+function drawVideoFrame(video: HTMLVideoElement, width: number, height: number) {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("画布渲染上下文不可用。");
+  }
+
+  context.drawImage(video, 0, 0, width, height);
+
+  return canvas;
+}
+
+async function compressVideoFrame(video: HTMLVideoElement, sourceWidth: number, sourceHeight: number) {
+  let smallestResult: CompressionResult | null = null;
+
+  for (const attempt of compressionAttempts) {
+    const { width, height } = getScaledFrameSize(sourceWidth, sourceHeight, attempt.maxLongEdge);
+    const canvas = drawVideoFrame(video, width, height);
+    const blob = await canvasToJpegBlob(canvas, attempt.quality);
+    const result = { blob, width, height };
+
+    if (!smallestResult || blob.size < smallestResult.blob.size) {
+      smallestResult = result;
+    }
+
+    if (blob.size <= targetFrameSizeKb * 1024) {
+      return result;
+    }
+  }
+
+  if (!smallestResult) {
+    throw new Error("画布没有生成图片。");
+  }
+
+  return smallestResult;
+}
+
 export function useFrameCapture() {
   const [frameState, setFrameState] = useState<FrameCaptureState>(initialState);
 
-  const captureFrame = useCallback(async (video: HTMLVideoElement | null, quality = 0.62) => {
+  const captureFrame = useCallback(async (video: HTMLVideoElement | null) => {
     if (!video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
       setFrameState({
         status: "error",
@@ -77,25 +148,14 @@ export function useFrameCapture() {
     setFrameState((current) => ({ ...current, status: "capturing", errorMessage: null }));
 
     try {
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-
-      const context = canvas.getContext("2d");
-
-      if (!context) {
-        throw new Error("画布渲染上下文不可用。");
-      }
-
-      context.drawImage(video, 0, 0, width, height);
-
-      const blob = await canvasToJpegBlob(canvas, quality);
+      const compressedFrame = await compressVideoFrame(video, width, height);
+      const blob = compressedFrame.blob;
       const dataUrl = await blobToDataUrl(blob);
       const frame: CapturedFrame = {
         blob,
         dataUrl,
-        width,
-        height,
+        width: compressedFrame.width,
+        height: compressedFrame.height,
         sizeKb: Math.round((blob.size / 1024) * 10) / 10,
         capturedAt: new Date().toISOString(),
       };
