@@ -4,11 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "dev:https": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$env:VITE_DEV_HTTPS='true'; vite --host 0.0.0.0\"",
+    "dev": "node scripts/dev.mjs",
+    "dev:https": "node scripts/dev.mjs --https",
     "tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-ngrok.ps1",
-    "build": "tsc --build && vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "build": "tsc --build frontend/tsconfig.json && vite build --config frontend/vite.config.ts",
+    "preview": "vite preview --config frontend/vite.config.ts --host 127.0.0.1"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.5",

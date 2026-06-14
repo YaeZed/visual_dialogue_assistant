@@ -3,32 +3,35 @@
 ## 技术栈
 - Vite + React + TypeScript
 - shadcn/ui + Tailwind CSS + Framer Motion
-- 中转站 API: base_url=https://api.icodeeasy.cc
-- 多模态模型: Gemini 3.1 Flash（主力）, GPT image2（备选）
+- Node.js 本地后端代理
+- AI API: DashScope OpenAI-compatible endpoint `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- 多模态模型: `qwen-vl-plus`
 - 语音识别: Web Speech API（浏览器端）
 - 语音合成: Web Speech API TTS（浏览器端）
 - 调试: vConsole（dev 模式注入）
 
 ## 目录结构
 ```
-src/
-├── components/       # UI 组件
-│   ├── ui/           # shadcn/ui 基础组件
-│   ├── Orb.tsx       # Orb 发光实体
-│   └── Caption.tsx   # 字幕浮层
-├── hooks/            # 自定义 hooks
-│   ├── useCamera.ts
-│   ├── useMicrophone.ts
-│   ├── useSpeechRecognition.ts
-│   ├── useFrameCapture.ts
-│   ├── useAiChat.ts
-│   └── useOrbState.ts
-├── lib/              # 工具函数
-│   ├── api.ts        # 中转站 API 封装
-│   └── utils.ts
-├── App.tsx
-└── main.tsx
+backend/
+└── server.mjs         # 本地 AI API 代理，读取 AI_API_KEY
+
+frontend/
+├── src/
+│   ├── components/    # UI 组件
+│   ├── hooks/         # 自定义 hooks
+│   ├── lib/           # 前端 API client 与工具函数
+│   ├── App.tsx
+│   └── main.tsx
+├── index.html
+├── vite.config.ts
+└── tsconfig.json
+
+scripts/
+├── dev.mjs            # 同时启动前端和后端
+└── start-ngrok.ps1
 ```
+
+前端源码只放在 `frontend/src/`，后端源码只放在 `backend/`。API key 只放在本地 `.env` 的 `AI_API_KEY`，禁止写入 `VITE_*` 前端变量、源码或浏览器存储。
 
 ## PR 规范（竞赛要求）
 

@@ -11,6 +11,7 @@
 ## 技术栈
 - Vite + React + TypeScript
 - shadcn/ui + Tailwind CSS + Framer Motion
+- Node.js 本地后端代理
 - AI API: DashScope OpenAI-compatible endpoint `https://dashscope.aliyuncs.com/compatible-mode/v1`
 - 多模态模型: `qwen-vl-plus`
 - 语音识别: Web Speech API
@@ -22,30 +23,34 @@
 docs/
 ├── design.md         # 产品设计说明、用户故事、成本控制策略
 
-src/
-├── components/       # 业务 UI 组件
-│   ├── ui/           # shadcn/ui 基础组件
-│   ├── Orb.tsx       # Orb 发光实体
-│   ├── Caption.tsx   # 字幕浮层
-│   ├── DialogueStatus.tsx # 对话状态整合层
-│   └── MobileActionBar.tsx # 手机底部触控栏
-├── hooks/            # 自定义 hooks
-│   ├── useCamera.ts
-│   ├── useMicrophone.ts
-│   ├── useSpeechRecognition.ts
-│   ├── useFrameCapture.ts
-│   ├── useAiChat.ts
-│   ├── useOrbState.ts
-│   └── useSpeechSynthesis.ts
-├── lib/              # 工具函数与 API 封装
-│   ├── api.ts
-│   └── utils.ts
-├── App.tsx
-├── main.tsx
-└── styles.css
+backend/
+└── server.mjs         # 本地 AI API 代理，读取 AI_API_KEY
+
+frontend/
+├── src/
+│   ├── components/    # 业务 UI 组件
+│   │   ├── ui/        # shadcn/ui 基础组件
+│   │   ├── Orb.tsx
+│   │   ├── Caption.tsx
+│   │   ├── DialogueStatus.tsx
+│   │   └── MobileActionBar.tsx
+│   ├── hooks/         # 自定义 hooks
+│   ├── lib/           # 前端 API client 与工具函数
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── styles.css
+├── index.html
+├── vite.config.ts
+└── tsconfig.json
+
+scripts/
+├── dev.mjs            # 同时启动前端和后端
+└── start-ngrok.ps1
 ```
 
 新增项目级文档放在 `docs/`，文件名使用短横线或语义名，优先服务评审复现和后续维护；临时排查材料不进入 `docs/`。
+前端源码只放在 `frontend/src/`，后端源码只放在 `backend/`；根目录不再新增 `src/`。
+API key 只放在本地 `.env` 的 `AI_API_KEY`，由后端代理读取，禁止写入 `VITE_*` 前端变量、源码或浏览器存储。
 
 ## 开发命令
 依赖安装后使用：
@@ -60,6 +65,8 @@ npm run preview
 npm run dev
 npm run tunnel
 ```
+
+`npm run dev` 会同时启动前端 Vite 和后端代理；改 `.env` 后必须重启。
 
 ## 产品与交互原则
 - 第一屏必须是可操作产品界面，不做营销页。

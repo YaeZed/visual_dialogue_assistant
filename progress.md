@@ -453,3 +453,38 @@
 |------|-------|----------|--------|--------|
 | Whitespace check | `git diff --check` | no whitespace errors | passed | passed |
 | Build | `npm run build` | TypeScript and Vite build pass | Codex shell cannot find `npm`; user needs to run locally | blocked |
+
+### PR20: 前后端目录拆分与后端 API key 代理
+- **Status:** ready_for_pr
+- Actions taken:
+  - 将前端 Vite/React 入口、配置和源码迁移到 `frontend/`
+  - 新增 `backend/server.mjs`，用 Node 内置 `http` 提供 `/api/health` 和 `/api/vision-chat`
+  - 后端从根目录 `.env` 读取 `AI_API_KEY`、`AI_API_BASE_URL`、`AI_MODEL`
+  - 前端移除 API 密钥输入框，不再向浏览器暴露密钥状态
+  - 前端 API client 改为请求本地 `/api/vision-chat`
+  - 新增 `scripts/dev.mjs`，`npm run dev` 同时启动后端代理和前端 Vite
+  - 同步 README、CODEX、agents、task_plan、findings 中的目录结构、环境变量和安全说明
+  - Git 分支/PR 写入需用户本地执行；`docs/pr-stack.md` 未纳入本次变更
+- Files modified:
+  - backend/server.mjs
+  - scripts/dev.mjs
+  - frontend/
+  - package.json
+  - .env.example
+  - README.md
+  - CODEX.md
+  - agents.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR20
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | frontend production build passes | built `../dist` successfully | passed |
+| Backend health | `GET http://127.0.0.1:8787/api/health` | backend returns health JSON | `providerConfigured:false` without local key | passed |
+| Missing key response | `POST /api/vision-chat` without `AI_API_KEY` | actionable Chinese config error | returned `.env` / restart hint | passed |
+| Dev chain | `node scripts/dev.mjs` then request frontend and `/api/health` through Vite | frontend and backend start together | frontend 200, proxy health ok | passed |
+| Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay, no API key input | passed | passed |
+| Browser mobile check | viewport 390x844 | no horizontal overflow, mobile action bar visible, no API key input | passed | passed |

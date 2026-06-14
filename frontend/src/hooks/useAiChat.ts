@@ -20,7 +20,6 @@ interface AiChatState {
 }
 
 interface AskVisionQuestionInput {
-  apiKey: string;
   prompt: string;
   imageDataUrl: string;
 }
@@ -54,7 +53,7 @@ export function useAiChat() {
   const [chatState, setChatState] = useState<AiChatState>(initialState);
 
   const askVisionQuestion = useCallback(
-    async ({ apiKey, prompt, imageDataUrl }: AskVisionQuestionInput) => {
+    async ({ prompt, imageDataUrl }: AskVisionQuestionInput) => {
       abortControllerRef.current?.abort();
 
       const abortController = new AbortController();
@@ -68,7 +67,6 @@ export function useAiChat() {
 
       try {
         const result = await createVisionChatCompletion({
-          apiKey,
           prompt,
           imageDataUrl,
           history: chatState.turns.map((turn) => ({
