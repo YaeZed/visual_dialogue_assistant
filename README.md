@@ -7,7 +7,7 @@
 ## 设计文档
 
 - [docs/product-design-summary.md](docs/product-design-summary.md)：功能计划与最终实现、运营成本控制思路和实际采用策略。
-- [docs/design.md](docs/design.md)：用户故事、状态机、交互路径和成本控制细节。
+- [docs/design.md](docs/design.md)：用户体验、状态机、交互路径和成本控制细节。
 - [docs/task_plan.md](docs/task_plan.md)、[docs/findings.md](docs/findings.md)、[docs/progress.md](docs/progress.md)：开发规划、过程发现和进度记录。
 
 ## 项目演示场景
