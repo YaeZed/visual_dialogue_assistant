@@ -568,3 +568,27 @@
 | Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
 | Browser mobile check | viewport 390x844 | one primary start button; no horizontal overflow | `scrollWidth=375`; main `开始对话` enabled; later actions disabled | passed |
 | Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
+
+### PR24: 右侧面板信息密度精简
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P2 收敛范围，只处理右侧面板默认信息密度，不改自动追问和弱网策略。
+  - 将右侧面板默认结构改为“当前步骤 + 下一步操作”，避免同时展开摄像头、语音、抓帧、AI 和上下文状态。
+  - 移除右侧面板中与 `DialogueStatus` 重复的 dot + 状态文字条。
+  - 将流程概览、当前问题、抓帧预览、回答详情和关闭摄像头放入“本轮详情”折叠区。
+  - 将上下文默认折叠，入口显示“最近 N 轮对话”，展开后显示最近 4 轮并保留清空上下文。
+- Files modified:
+  - frontend/src/App.tsx
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR24
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser mobile check | viewport 390x844 | no horizontal overflow; one primary start entry; downstream actions disabled before camera | `scrollWidth=375`; main `开始对话` count 1; `对话/画面/提问` disabled | passed |
+| Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
