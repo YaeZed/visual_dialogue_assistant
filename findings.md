@@ -54,6 +54,7 @@
 | 手机端高频操作不应藏在滚动面板里 | PR14 增加底部安全区触控栏，保留原有面板但把 Camera / Voice / Frame / Ask 四个高频动作固定到拇指区 |
 | README 必须服务评审和复现 | PR15 将 README 从进度清单升级为交付文档，明确运行命令、环境变量、依赖来源、原创功能和验证边界 |
 | 设计文档需要解释取舍而不是复述功能 | PR16 从用户故事、状态机、失败恢复和成本控制角度解释为什么采用单帧抓取、文本上下文和浏览器端语音能力 |
+| Vite `VITE_*` 环境变量不适合保存真实 API key | PR20 增加本地 Node 后端代理，前端只请求 `/api/vision-chat`，后端从 `.env` 读取 `AI_API_KEY` 后调用 DashScope |
 
 ## Resources
 - Vite HTTPS plugin: @vitejs/plugin-basic-ssl

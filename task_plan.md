@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 6 / PR19
+Phase 5 / PR20
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -58,6 +58,7 @@ Phase 6 / PR19
 | PR17 | 修复 ngrok 手机访问被 Vite host check 拦截 | PR16 |
 | PR18 | 切换默认视觉模型到千问 DashScope | PR17 |
 | PR19 | 前端中文化与 AI 错误诊断提示 | PR18 |
+| PR20 | 前后端目录拆分与后端 API key 代理 | PR19 |
 
 ## Decisions Made
 | Decision | Rationale |
@@ -70,6 +71,7 @@ Phase 6 / PR19
 | qwen-vl-plus 主力模型 | 真机测试已跑通 DashScope OpenAI-compatible 视觉问答，减少中转站不稳定因素 |
 | HTTPS + ngrok 隧道 | iOS Safari 要求 HTTPS 才允许 getUserMedia |
 | vConsole 注入调试 | Windows 无法用 Safari Web Inspector |
+| 本地 Node 后端代理 | Vite 前端变量会暴露到浏览器；后端代理让 API key 留在 Node 进程和 `.env` 中 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

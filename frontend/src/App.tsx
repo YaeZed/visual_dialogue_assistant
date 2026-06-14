@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, CameraOff, Image, KeyRound, Mic, Send, Sparkles, Square, Volume2 } from "lucide-react";
+import { Camera, CameraOff, Image, Mic, Send, Sparkles, Square, Volume2 } from "lucide-react";
 import { Caption } from "@/components/Caption";
 import { DialogueStatus, type DialogueSignalState, type DialogueTone } from "@/components/DialogueStatus";
 import { MobileActionBar } from "@/components/MobileActionBar";
@@ -257,7 +257,6 @@ function getDialogueDetail({
 }
 
 function App() {
-  const [apiKey, setApiKey] = useState("");
   const [fallbackQuestion, setFallbackQuestion] = useState("");
   const lastSpokenAnswerRef = useRef("");
   const {
@@ -323,7 +322,7 @@ function App() {
   );
   const hasQuestion = Boolean(questionText);
   const canCaptureFrame = isReady && frameStatus !== "capturing";
-  const canAskAi = Boolean(apiKey.trim() && questionText && frame) && !isThinking;
+  const canAskAi = Boolean(questionText && frame) && !isThinking;
   const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
   const orbState = useOrbState({ isListening, isThinking, isSpeaking });
   const dialogueTitle = getDialogueTitle({
@@ -388,7 +387,6 @@ function App() {
   ];
   const askAiWithFrame = (imageDataUrl: string, prompt: string) =>
     askVisionQuestion({
-      apiKey,
       prompt,
       imageDataUrl,
     });
@@ -435,9 +433,7 @@ function App() {
     const nextQuestion = questionText || FALLBACK_VISUAL_QUESTION;
     setFallbackQuestion(nextQuestion);
 
-    if (apiKey.trim()) {
-      await askAiWithFrame(nextFrame.dataUrl, nextQuestion);
-    }
+    await askAiWithFrame(nextFrame.dataUrl, nextQuestion);
   };
 
   return (
@@ -672,21 +668,6 @@ function App() {
           </section>
 
           <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
-            <label className="grid gap-1.5 text-sm text-slate-300">
-              <span className="flex items-center gap-2 font-bold text-slate-200">
-                <KeyRound aria-hidden="true" className="size-4" />
-                API 密钥
-              </span>
-              <input
-                autoComplete="off"
-                className="min-h-11 rounded-card border border-panel-border bg-background/70 px-3 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-accent"
-                onChange={(event) => setApiKey(event.target.value)}
-                placeholder="sk-..."
-                type="password"
-                value={apiKey}
-              />
-            </label>
-
             <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
               <span
                 className={getStatusDotClass(
@@ -702,7 +683,7 @@ function App() {
                     ? model
                       ? `AI 回答已生成，模型：${model}`
                       : "AI 回答已生成"
-                    : aiError ?? synthesisError ?? "填写 API 密钥、准备问题并抓取画面后即可提问。"}
+                    : aiError ?? synthesisError ?? "准备问题并抓取画面后即可提问。"}
               </span>
             </div>
 
