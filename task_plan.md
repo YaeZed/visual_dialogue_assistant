@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 6 / PR25
+Phase 6 / PR26
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -68,6 +68,7 @@ Phase 6 / PR25
 | PR23 | P1 Orb 首屏视觉权重与首次启动引导 | PR22 |
 | PR24 | P2 精简右侧面板信息密度：当前步骤优先、详情与上下文默认折叠 | PR23 |
 | PR25 | P3 回答后自动进入追问聆听，并在静默 15 秒后停止 | PR24 |
+| PR26 | P3 弱网慢响应提示：AI 请求超过 8 秒显示等待反馈 | PR25 |
 
 ## Decisions Made
 | Decision | Rationale |
