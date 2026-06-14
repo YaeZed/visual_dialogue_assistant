@@ -3,7 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Camera,
   CameraOff,
+  Check,
   ChevronDown,
+  Copy,
   History,
   Image,
   Keyboard,
@@ -22,7 +24,7 @@ import { Orb } from "@/components/Orb";
 import { Button } from "@/components/ui/button";
 import { useAiChat } from "@/hooks/useAiChat";
 import { useCamera, type CameraStatus } from "@/hooks/useCamera";
-import { useFrameCapture } from "@/hooks/useFrameCapture";
+import { useFrameCapture, type FrameCaptureMode } from "@/hooks/useFrameCapture";
 import { useMicrophone, type MicrophoneStatus } from "@/hooks/useMicrophone";
 import { useOrbState } from "@/hooks/useOrbState";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
@@ -36,6 +38,26 @@ const FALLBACK_VISUAL_QUESTION = "请描述当前画面，并指出值得我注�
 const AUTO_ASK_SILENCE_MS = 1200;
 const FOLLOW_UP_IDLE_TIMEOUT_MS = 15000;
 const SLOW_AI_RESPONSE_MS = 8000;
+const ANSWER_SUMMARY_MAX_LENGTH = 82;
+
+type CopyTarget = "answer" | "summary";
+
+function getAnswerSummary(answer: string) {
+  const normalizedAnswer = answer.replace(/\s+/g, " ").trim();
+
+  if (!normalizedAnswer) {
+    return "";
+  }
+
+  const sentenceMatch = normalizedAnswer.match(/^.{12,}?[。！？.!?]/u);
+  const summary = sentenceMatch?.[0] ?? normalizedAnswer;
+
+  if (summary.length <= ANSWER_SUMMARY_MAX_LENGTH) {
+    return summary;
+  }
+
+  return `${summary.slice(0, ANSWER_SUMMARY_MAX_LENGTH).trim()}...`;
+}
 
 function getCameraCopy(status: CameraStatus, errorMessage: string | null) {
   if (status === "requesting") {
@@ -308,6 +330,9 @@ function App() {
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [isFollowUpListening, setIsFollowUpListening] = useState(false);
   const [isAiResponseSlow, setIsAiResponseSlow] = useState(false);
+  const [frameCaptureMode, setFrameCaptureMode] = useState<FrameCaptureMode>("low");
+  const [copiedTarget, setCopiedTarget] = useState<CopyTarget | null>(null);
+  const [copyError, setCopyError] = useState("");
   const lastSpokenAnswerRef = useRef("");
   const autoAskedQuestionRef = useRef("");
   const lastFollowUpCompletionRef = useRef(0);
@@ -384,8 +409,13 @@ function App() {
   const canCaptureFrame = isReady && frameStatus !== "capturing";
   const canAskAi = Boolean(questionText && frame) && !isThinking && frameStatus !== "capturing";
   const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
+  const answerSummary = useMemo(() => getAnswerSummary(answer), [answer]);
   const shouldShowTextQuestionInput =
     !answer && !isListening && !isThinking && (!spokenText || Boolean(fallbackQuestion));
+  const frameCaptureModeDetail =
+    frameCaptureMode === "low"
+      ? "低清模式会优先压缩到约 40KB，适合弱网快速提问。"
+      : "高清模式会保留更多细节，适合文字、小物体或复杂画面。";
   const orbState = useOrbState({ isListening, isThinking, isSpeaking });
   const dialogueTitle = getDialogueTitle({
     answer,
@@ -523,7 +553,34 @@ function App() {
   };
 
   const handleCaptureFrame = () => {
-    void captureFrame(getVideoElement());
+    void captureFrame(getVideoElement(), frameCaptureMode);
+  };
+
+  const handleFrameCaptureModeChange = (mode: FrameCaptureMode) => {
+    setFrameCaptureMode(mode);
+
+    if (frame && frame.mode !== mode) {
+      clearFrame();
+    }
+  };
+
+  const handleCopyAnswer = async (text: string, target: CopyTarget) => {
+    if (!text) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedTarget(target);
+      setCopyError("");
+
+      window.setTimeout(() => {
+        setCopiedTarget(null);
+      }, 1600);
+    } catch {
+      setCopiedTarget(null);
+      setCopyError("复制失败，请手动选中文本复制。");
+    }
   };
 
   const handleStartVoiceConversation = async () => {
@@ -564,6 +621,8 @@ function App() {
     if (!answer) {
       lastSpokenAnswerRef.current = "";
       setIsFollowUpListening(false);
+      setCopiedTarget(null);
+      setCopyError("");
       stop();
     }
   }, [answer, stop]);
@@ -643,7 +702,7 @@ function App() {
       return;
     }
 
-    const nextFrame = await captureFrame(getVideoElement());
+    const nextFrame = await captureFrame(getVideoElement(), frameCaptureMode);
 
     if (!nextFrame) {
       return;
@@ -676,7 +735,7 @@ function App() {
       stopListening();
 
       void (async () => {
-        const nextFrame = await captureFrame(getVideoElement());
+        const nextFrame = await captureFrame(getVideoElement(), frameCaptureMode);
 
         if (!nextFrame) {
           autoAskedQuestionRef.current = "";
@@ -691,6 +750,7 @@ function App() {
   }, [
     askAiWithFrame,
     captureFrame,
+    frameCaptureMode,
     getVideoElement,
     interimTranscript,
     isReady,
@@ -853,9 +913,74 @@ function App() {
                   </label>
                 )}
 
+                {isReady && !isThinking && (
+                  <div className="grid gap-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="m-0 text-xs font-bold uppercase text-muted">抓帧模式</p>
+                      <div className="grid grid-cols-2 gap-1 rounded-card border border-panel-border bg-background/48 p-1">
+                        <Button
+                          className="min-h-9 px-3 text-xs"
+                          onClick={() => handleFrameCaptureModeChange("low")}
+                          type="button"
+                          variant={frameCaptureMode === "low" ? "default" : "ghost"}
+                        >
+                          低清
+                        </Button>
+                        <Button
+                          className="min-h-9 px-3 text-xs"
+                          onClick={() => handleFrameCaptureModeChange("high")}
+                          type="button"
+                          variant={frameCaptureMode === "high" ? "default" : "ghost"}
+                        >
+                          高清
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="m-0 text-xs leading-relaxed text-muted">{frameCaptureModeDetail}</p>
+                  </div>
+                )}
+
                 {answer && !isListening && !isThinking && (
-                  <div className="max-h-36 overflow-auto rounded-card border border-panel-border bg-background/48 p-3 text-sm leading-relaxed text-slate-200">
-                    <p className="m-0">{answer}</p>
+                  <div className="grid gap-3 rounded-card border border-panel-border bg-background/48 p-3">
+                    <div className="grid gap-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="m-0 text-xs font-bold uppercase text-muted">回答摘要</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            disabled={!answerSummary}
+                            onClick={() => void handleCopyAnswer(answerSummary, "summary")}
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                          >
+                            {copiedTarget === "summary" ? (
+                              <Check aria-hidden="true" className="size-4" />
+                            ) : (
+                              <Copy aria-hidden="true" className="size-4" />
+                            )}
+                            {copiedTarget === "summary" ? "已复制" : "复制摘要"}
+                          </Button>
+                          <Button
+                            onClick={() => void handleCopyAnswer(answer, "answer")}
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                          >
+                            {copiedTarget === "answer" ? (
+                              <Check aria-hidden="true" className="size-4" />
+                            ) : (
+                              <Copy aria-hidden="true" className="size-4" />
+                            )}
+                            {copiedTarget === "answer" ? "已复制" : "复制全文"}
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="m-0 text-sm leading-relaxed text-slate-100">{answerSummary}</p>
+                      {copyError && <p className="m-0 text-xs text-warning">{copyError}</p>}
+                    </div>
+                    <div className="max-h-36 overflow-auto text-sm leading-relaxed text-slate-200">
+                      <p className="m-0">{answer}</p>
+                    </div>
                   </div>
                 )}
 
@@ -1043,6 +1168,7 @@ function App() {
                         />
                         <span>
                           {frame.width}x{frame.height}，{frame.sizeKb} KB，
+                          {frame.mode === "low" ? "低清" : "高清"}，
                           {new Date(frame.capturedAt).toLocaleTimeString()}
                         </span>
                       </div>

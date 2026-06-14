@@ -518,6 +518,75 @@
 | Browser mobile check | viewport 390x844 | no horizontal overflow; bottom bar buttons visible | `scrollWidth=375`, buttons `摄像头/对话/画面/提问` visible | passed |
 | Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
 
+### PR30: 回答摘要和复制
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P3 扩展项拆分本次范围，只处理回答摘要和复制，不改变 AI 请求和 TTS 链路。
+  - 增加浏览器端回答摘要规则：清理空白后优先取首句，过长时截断到固定长度。
+  - 回答生成后在当前步骤卡片展示摘要，并提供“复制摘要”和“复制全文”两个操作。
+  - 复制使用 Clipboard API；成功后按钮短暂显示“已复制”，失败时给出手动复制提示。
+- Files modified:
+  - frontend/src/App.tsx
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR30
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend\tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend\vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay or console errors | main present, one start entry, logs empty | passed |
+| Browser mobile viewport | viewport 390x844 | no horizontal overflow; bottom actions visible | `scrollWidth=375`, `clientWidth=375`, 4 mobile actions visible | passed |
+| Clipboard copy action | answer present in secure browser context | copy buttons write summary/full answer to clipboard | needs real answer state; not triggered in desktop no-camera path | blocked |
+
+### PR31: 低清/高清抓帧模式
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P3 扩展项拆分本次范围，只处理抓帧清晰度选择，不改变 AI 请求接口。
+  - `useFrameCapture` 增加 `FrameCaptureMode`，低清保留约 40KB 目标，高清放宽到约 120KB 并使用更高 JPEG quality。
+  - 当前步骤卡片增加“抓帧模式”两段式控件，说明低清适合弱网快速提问、高清适合文字和复杂画面。
+  - 手动抓帧、点击画面提问、语音自动抓帧均使用当前模式。
+  - 切换模式时清除已抓取旧帧，避免当前模式和实际发送画面不一致。
+- Files modified:
+  - frontend/src/App.tsx
+  - frontend/src/hooks/useFrameCapture.ts
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR31
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend\tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend\vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay or console errors | main present, no camera-ready controls, logs empty | passed |
+| Browser mobile viewport | viewport 390x844 | no horizontal overflow; bottom actions visible | `scrollWidth=375`, `clientWidth=375`, 4 mobile actions visible | passed |
+| Real capture mode switch | camera ready on Safari/device | low/high mode changes next captured frame size and metadata | desktop environment has no camera permission path | blocked |
+
+### PR32: 端到端真机测试清单
+- **Status:** ready_for_pr
+- Actions taken:
+  - 新增 `docs/e2e-device-test-checklist.md`，不修改当前已有本地改动的 `docs/design.md`。
+  - 按真机执行顺序覆盖基础连通性、权限、首轮对话、追问上下文、文本输入兜底、抓帧模式、弱网失败恢复和回答复用。
+  - 增加环境记录表和通过标准，明确桌面无法替代的 iOS Safari / ngrok / 摄像头 / 麦克风验证项。
+- Files modified:
+  - docs/e2e-device-test-checklist.md
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR32
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` scoped to PR32 files | no whitespace errors | passed; only CRLF warnings | passed |
+| Checklist coverage review | read `docs/e2e-device-test-checklist.md` | covers iOS Safari, ngrok, permissions, weak network, retry, text fallback, capture mode, copy | covered in E2E-01 through E2E-35 | passed |
+| Frontend regression | PR30/PR31 build and browser checks | code changes already validated before docs-only PR32 | TypeScript, Vite, HTTP, desktop and mobile viewport checks passed before PR32 | passed |
+
 ### PR29: 显式文本问题输入
 - **Status:** ready_for_pr
 - Actions taken:
