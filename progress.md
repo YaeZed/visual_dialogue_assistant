@@ -593,6 +593,29 @@
 | Browser mobile check | viewport 390x844 | no horizontal overflow; one primary start entry; downstream actions disabled before camera | `scrollWidth=375`; main `开始对话` count 1; `对话/画面/提问` disabled | passed |
 | Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
 
+### PR26: 弱网慢响应提示
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P3 弱网体验拆分本次范围，只做 AI 请求超过 8 秒后的慢响应反馈。
+  - 新增 8 秒慢响应计时状态，请求结束、失败或取消后自动恢复普通等待文案。
+  - 视频中央等待遮罩在慢响应后显示“网络较慢，正在等待 AI 响应...”，并说明问题和画面已保留。
+  - 右上 `DialogueStatus` 与右侧当前步骤面板同步切换慢响应文案，避免用户误以为系统卡死。
+- Files modified:
+  - frontend/src/App.tsx
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR26
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay; primary start entry visible | passed at current desktop viewport; only reduced-motion Framer Motion warning | passed |
+| Browser mobile viewport | viewport 390x844 | no horizontal overflow | Browser viewport override stayed at desktop width `1280`; no Playwright dependency in project for fallback | blocked |
+
 ### PR25: 回答后自动追问聆听
 - **Status:** ready_for_pr
 - Actions taken:

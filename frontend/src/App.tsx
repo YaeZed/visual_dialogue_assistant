@@ -34,6 +34,7 @@ import { cn } from "@/lib/utils";
 const FALLBACK_VISUAL_QUESTION = "请描述当前画面，并指出值得我注意的内容。";
 const AUTO_ASK_SILENCE_MS = 1200;
 const FOLLOW_UP_IDLE_TIMEOUT_MS = 15000;
+const SLOW_AI_RESPONSE_MS = 8000;
 
 function getCameraCopy(status: CameraStatus, errorMessage: string | null) {
   if (status === "requesting") {
@@ -185,6 +186,7 @@ function getDialogueTitle({
   answer,
   frameStatus,
   hasQuestion,
+  isAiResponseSlow,
   isListening,
   isSpeaking,
   isThinking,
@@ -194,6 +196,7 @@ function getDialogueTitle({
   frame: boolean;
   frameStatus: string;
   hasQuestion: boolean;
+  isAiResponseSlow: boolean;
   isListening: boolean;
   isSpeaking: boolean;
   isThinking: boolean;
@@ -203,6 +206,10 @@ function getDialogueTitle({
   }
 
   if (isThinking) {
+    if (isAiResponseSlow) {
+      return "网络较慢";
+    }
+
     return "正在理解画面";
   }
 
@@ -237,6 +244,7 @@ function getDialogueDetail({
   frameStatus,
   frameError,
   hasQuestion,
+  isAiResponseSlow,
   isSpeaking,
   isThinking,
   synthesisError,
@@ -248,6 +256,7 @@ function getDialogueDetail({
   frameStatus: string;
   frameError: string | null;
   hasQuestion: boolean;
+  isAiResponseSlow: boolean;
   isSpeaking: boolean;
   isThinking: boolean;
   synthesisError: string | null;
@@ -261,6 +270,10 @@ function getDialogueDetail({
   }
 
   if (isThinking) {
+    if (isAiResponseSlow) {
+      return "网络较慢，正在等待 AI 响应...";
+    }
+
     return "正在把当前画面和问题发送给 AI。";
   }
 
@@ -287,6 +300,7 @@ function App() {
   const [fallbackQuestion, setFallbackQuestion] = useState("");
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [isFollowUpListening, setIsFollowUpListening] = useState(false);
+  const [isAiResponseSlow, setIsAiResponseSlow] = useState(false);
   const lastSpokenAnswerRef = useRef("");
   const autoAskedQuestionRef = useRef("");
   const lastFollowUpCompletionRef = useRef(0);
@@ -367,6 +381,7 @@ function App() {
     frame: Boolean(frame),
     frameStatus,
     hasQuestion,
+    isAiResponseSlow,
     isListening,
     isSpeaking,
     isThinking,
@@ -379,6 +394,7 @@ function App() {
     frameStatus,
     frameError,
     hasQuestion,
+    isAiResponseSlow,
     isSpeaking,
     isThinking,
     synthesisError,
@@ -428,7 +444,9 @@ function App() {
   const panelTitle = panelIssue
     ? "需要处理当前异常"
     : isThinking
-      ? "正在生成回答"
+      ? isAiResponseSlow
+        ? "网络较慢"
+        : "正在生成回答"
       : isSpeaking
         ? "正在朗读回答"
         : isFollowUpListening && isListening
@@ -449,7 +467,9 @@ function App() {
   const panelDetail = panelIssue
     ? panelIssue
     : isThinking
-      ? "系统正在把当前画面和问题发送给 AI。"
+      ? isAiResponseSlow
+        ? "网络较慢，正在等待 AI 响应..."
+        : "系统正在把当前画面和问题发送给 AI。"
       : isSpeaking
         ? "回答正在朗读，字幕会同步显示在画面下方。"
         : isFollowUpListening && isListening
@@ -530,6 +550,20 @@ function App() {
       stop();
     }
   }, [answer, stop]);
+
+  useEffect(() => {
+    if (!isThinking) {
+      setIsAiResponseSlow(false);
+      return;
+    }
+
+    setIsAiResponseSlow(false);
+    const timeoutId = window.setTimeout(() => {
+      setIsAiResponseSlow(true);
+    }, SLOW_AI_RESPONSE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isThinking]);
 
   useEffect(() => {
     if (!completedUtterance || completedUtterance.id === lastFollowUpCompletionRef.current) {
@@ -712,10 +746,12 @@ function App() {
                   <Orb className="size-[min(42vw,180px)]" size="lg" state="thinking" />
                   <div className="grid gap-1">
                     <p className="m-0 text-base font-bold text-amber-100 md:text-lg">
-                      正在理解画面
+                      {isAiResponseSlow ? "网络较慢，正在等待 AI 响应..." : "正在理解画面"}
                     </p>
                     <p className="m-0 max-w-[18rem] text-sm leading-relaxed text-slate-200">
-                      已收到问题和当前画面，正在生成回答。
+                      {isAiResponseSlow
+                        ? "问题和画面已保留，响应返回后会继续生成回答。"
+                        : "已收到问题和当前画面，正在生成回答。"}
                     </p>
                   </div>
                 </div>
