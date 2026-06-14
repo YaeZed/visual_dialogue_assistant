@@ -261,8 +261,14 @@ function getDialogueDetail({
   isThinking: boolean;
   synthesisError: string | null;
 }) {
-  if (aiError || frameError || synthesisError) {
-    return aiError ?? frameError ?? synthesisError ?? "请检查当前步骤后重试。";
+  if (aiError) {
+    return canAskAi
+      ? `${aiError} 已保留问题和画面，可直接重试。`
+      : aiError;
+  }
+
+  if (frameError || synthesisError) {
+    return frameError ?? synthesisError ?? "请检查当前步骤后重试。";
   }
 
   if (isSpeaking) {
@@ -442,7 +448,9 @@ function App() {
   ];
   const panelIssue = aiError ?? frameError ?? synthesisError;
   const panelTitle = panelIssue
-    ? "需要处理当前异常"
+    ? aiError && canAskAi
+      ? "提问失败，可直接重试"
+      : "需要处理当前异常"
     : isThinking
       ? isAiResponseSlow
         ? "网络较慢"
@@ -465,7 +473,9 @@ function App() {
                     ? "可以开始对话"
                     : "摄像头已就绪";
   const panelDetail = panelIssue
-    ? panelIssue
+    ? aiError && canAskAi
+      ? `${aiError} 已保留当前问题和画面，点击重试提问 AI。`
+      : panelIssue
     : isThinking
       ? isAiResponseSlow
         ? "网络较慢，正在等待 AI 响应..."
