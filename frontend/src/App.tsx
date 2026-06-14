@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 
 const FALLBACK_VISUAL_QUESTION = "请描述当前画面，并指出值得我注意的内容。";
 const AUTO_ASK_SILENCE_MS = 1200;
+const FOLLOW_UP_IDLE_TIMEOUT_MS = 15000;
 
 function getCameraCopy(status: CameraStatus, errorMessage: string | null) {
   if (status === "requesting") {
@@ -285,8 +286,10 @@ function getDialogueDetail({
 function App() {
   const [fallbackQuestion, setFallbackQuestion] = useState("");
   const [isContextOpen, setIsContextOpen] = useState(false);
+  const [isFollowUpListening, setIsFollowUpListening] = useState(false);
   const lastSpokenAnswerRef = useRef("");
   const autoAskedQuestionRef = useRef("");
+  const lastFollowUpCompletionRef = useRef(0);
   const {
     videoRef,
     status,
@@ -334,6 +337,7 @@ function App() {
   const {
     status: synthesisStatus,
     captionText,
+    completedUtterance,
     errorMessage: synthesisError,
     isSpeaking,
     speak,
@@ -427,6 +431,8 @@ function App() {
       ? "正在生成回答"
       : isSpeaking
         ? "正在朗读回答"
+        : isFollowUpListening && isListening
+          ? "可以直接追问"
         : isListening
           ? "正在聆听问题"
           : answer
@@ -446,6 +452,8 @@ function App() {
       ? "系统正在把当前画面和问题发送给 AI。"
       : isSpeaking
         ? "回答正在朗读，字幕会同步显示在画面下方。"
+        : isFollowUpListening && isListening
+          ? "回答朗读完毕，麦克风已保持开启；直接说追问即可。15 秒无声音会自动停止。"
         : isListening
           ? "说完后稍等片刻，系统会自动抓取画面并提问。"
           : answer
@@ -482,6 +490,8 @@ function App() {
   };
 
   const handleStartVoiceConversation = async () => {
+    setIsFollowUpListening(false);
+
     if (isListening) {
       stopListening();
       return;
@@ -516,9 +526,66 @@ function App() {
   useEffect(() => {
     if (!answer) {
       lastSpokenAnswerRef.current = "";
+      setIsFollowUpListening(false);
       stop();
     }
   }, [answer, stop]);
+
+  useEffect(() => {
+    if (!completedUtterance || completedUtterance.id === lastFollowUpCompletionRef.current) {
+      return;
+    }
+
+    lastFollowUpCompletionRef.current = completedUtterance.id;
+
+    if (
+      completedUtterance.text !== answer ||
+      !isReady ||
+      !isSpeechSupported ||
+      !isMicrophoneReady ||
+      isThinking ||
+      isListening ||
+      speechStatus === "stopping"
+    ) {
+      return;
+    }
+
+    clearTranscript();
+    setFallbackQuestion("");
+    autoAskedQuestionRef.current = "";
+    setIsFollowUpListening(true);
+    startListening();
+  }, [
+    answer,
+    clearTranscript,
+    completedUtterance,
+    isListening,
+    isMicrophoneReady,
+    isReady,
+    isSpeechSupported,
+    isThinking,
+    speechStatus,
+    startListening,
+  ]);
+
+  useEffect(() => {
+    if (speechStatus === "error" || speechStatus === "unsupported") {
+      setIsFollowUpListening(false);
+    }
+  }, [speechStatus]);
+
+  useEffect(() => {
+    if (!isFollowUpListening || !isListening || transcript.trim() || interimTranscript.trim()) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsFollowUpListening(false);
+      stopListening();
+    }, FOLLOW_UP_IDLE_TIMEOUT_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [interimTranscript, isFollowUpListening, isListening, stopListening, transcript]);
 
   const handleFallbackVisualQuestion = async () => {
     if (!canCaptureFrame || isThinking) {
@@ -554,6 +621,7 @@ function App() {
       }
 
       autoAskedQuestionRef.current = prompt;
+      setIsFollowUpListening(false);
       stopListening();
 
       void (async () => {

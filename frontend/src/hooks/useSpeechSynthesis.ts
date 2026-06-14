@@ -8,6 +8,11 @@ interface SpeechSynthesisState {
   errorMessage: string | null;
 }
 
+interface CompletedUtterance {
+  id: number;
+  text: string;
+}
+
 const initialState: SpeechSynthesisState = {
   status: "idle",
   captionText: "",
@@ -69,7 +74,9 @@ function getCaptionSegment(text: string, charIndex: number) {
 
 export function useSpeechSynthesis() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const completionIdRef = useRef(0);
   const [state, setState] = useState<SpeechSynthesisState>(initialState);
+  const [completedUtterance, setCompletedUtterance] = useState<CompletedUtterance | null>(null);
   const isSupported = useMemo(
     () =>
       typeof window !== "undefined" &&
@@ -157,10 +164,16 @@ export function useSpeechSynthesis() {
         }
 
         utteranceRef.current = null;
+        completionIdRef.current += 1;
+        setCompletedUtterance({
+          id: completionIdRef.current,
+          text: nextText,
+        });
         setState(initialState);
       };
 
       utteranceRef.current = utterance;
+      setCompletedUtterance(null);
       setState({
         status: "speaking",
         captionText: getCaptionSegment(nextText, 0),
@@ -177,6 +190,7 @@ export function useSpeechSynthesis() {
     ...state,
     isSupported,
     isSpeaking: state.status === "speaking",
+    completedUtterance,
     speak,
     stop,
   };

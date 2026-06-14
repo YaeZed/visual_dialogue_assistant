@@ -592,3 +592,28 @@
 | Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
 | Browser mobile check | viewport 390x844 | no horizontal overflow; one primary start entry; downstream actions disabled before camera | `scrollWidth=375`; main `开始对话` count 1; `对话/画面/提问` disabled | passed |
 | Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
+
+### PR25: 回答后自动追问聆听
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P3 收敛范围，只做回答后追问，不混入弱网体验优化。
+  - 在 `useSpeechSynthesis` 中暴露自然朗读结束信号，区分正常结束与手动停止/取消。
+  - 回答朗读自然结束后，如果摄像头、麦克风和语音识别均已就绪，自动清空旧问题并进入追问聆听。
+  - 追问聆听状态下保留原有最终语音自动抓帧提问链路，让“那这个呢”类口语追问继续带上下文理解。
+  - 追问聆听 15 秒内没有检测到新语音时自动停止，减少手机电量和麦克风占用。
+- Files modified:
+  - frontend/src/App.tsx
+  - frontend/src/hooks/useSpeechSynthesis.ts
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR25
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser mobile check | viewport 390x844 | no horizontal overflow; one primary start entry; downstream actions disabled before camera | `scrollWidth=375`; main `开始对话` count 1; `对话/画面/提问` disabled | passed |
+| Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
