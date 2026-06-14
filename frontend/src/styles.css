@@ -52,6 +52,10 @@
     padding-bottom: calc(96px + env(safe-area-inset-bottom));
   }
 
+  .vc-switch {
+    bottom: calc(86px + env(safe-area-inset-bottom)) !important;
+  }
+
   .vision-grid {
     background:
       linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),

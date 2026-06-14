@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 5 / PR20
+Phase 6 / PR21
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -60,6 +60,11 @@ Phase 5 / PR20
 | PR19 | 前端中文化与 AI 错误诊断提示 | PR18 |
 | PR20 | 前后端目录拆分与后端 API key 代理 | PR19 |
 
+### Phase 6: 设计文档驱动的体验优化
+| PR# | 内容 | 依赖 |
+|-----|------|------|
+| PR21 | P0 自动对话链路：合并麦克风/语音识别，并在语音结束后自动抓帧提问 | PR20 |
+
 ## Decisions Made
 | Decision | Rationale |
 |----------|-----------|
@@ -72,6 +77,7 @@ Phase 5 / PR20
 | HTTPS + ngrok 隧道 | iOS Safari 要求 HTTPS 才允许 getUserMedia |
 | vConsole 注入调试 | Windows 无法用 Safari Web Inspector |
 | 本地 Node 后端代理 | Vite 前端变量会暴露到浏览器；后端代理让 API key 留在 Node 进程和 `.env` 中 |
+| P0 优化先做自动链路 | 直接减少用户完成一次视觉问答的操作数；保留手动抓帧/提问作为失败兜底，不改变成本边界 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -114,3 +120,4 @@ Phase 5 / PR20
 - 2026-06-12: PR14 开发中：新增移动端底部触控栏，并调整安全区与字幕位置，降低手机单手操作成本。
 - 2026-06-12: PR15 开发中：重写 README 为交付版，补齐核心流程、依赖清单、环境变量、验证方式、原创功能和 MVP 边界。
 - 2026-06-12: PR16 开发中：新增 `docs/design.md`，沉淀用户故事、交互路径、状态设计、失败恢复、成本控制和后续扩展方向。
+- 2026-06-14: PR21 自动对话链路已完成验证：单一“开始对话”入口会串联麦克风授权和语音识别，最终语音文本稳定后自动抓帧并提问；手动抓帧/提问保留为兜底。

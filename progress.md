@@ -488,3 +488,32 @@
 | Dev chain | `node scripts/dev.mjs` then request frontend and `/api/health` through Vite | frontend and backend start together | frontend 200, proxy health ok | passed |
 | Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay, no API key input | passed | passed |
 | Browser mobile check | viewport 390x844 | no horizontal overflow, mobile action bar visible, no API key input | passed | passed |
+
+### PR21: P0 自动对话链路
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P0 优先级收敛本次范围，只做自动链路和语音入口合并
+  - `useMicrophone.startMicrophone` 改为返回布尔结果，供组合流程判断是否能继续启动语音识别
+  - 新增单一“开始对话”动作：点击后请求麦克风权限，成功后自动开始 Web Speech 识别
+  - 语音最终文本稳定后等待短暂静默，自动停止本轮聆听、抓取当前帧并发起 AI 视觉问答
+  - 保留手动抓取画面和提问 AI 作为兜底路径
+  - 移动底栏语音按钮改为同一套“对话”入口
+- Files modified:
+  - frontend/src/App.tsx
+  - frontend/src/components/MobileActionBar.tsx
+  - frontend/src/hooks/useMicrophone.ts
+  - frontend/src/styles.css
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR21
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend/tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend/vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop DOM | `http://127.0.0.1:5173/` | one voice entry, no old split mic/listen buttons | `开始对话` present; old split buttons absent | passed |
+| Browser mobile check | viewport 390x844 | no horizontal overflow; bottom bar buttons visible | `scrollWidth=375`, buttons `摄像头/对话/画面/提问` visible | passed |
+| Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |

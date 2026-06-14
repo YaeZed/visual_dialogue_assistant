@@ -1,4 +1,4 @@
-import { Camera, Image, Mic, Send, Volume2 } from "lucide-react";
+import { Camera, Image, Mic, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -9,17 +9,14 @@ interface MobileActionBarProps {
   isCameraBusy: boolean;
   isCameraReady: boolean;
   isListening: boolean;
-  isMicrophoneBusy: boolean;
-  isMicrophoneReady: boolean;
   isThinking: boolean;
   isSpeechReady: boolean;
-  microphoneAction: string;
-  speechAction: string;
+  isVoiceBusy: boolean;
+  voiceAction: string;
   onAskAi: () => void;
   onCaptureFrame: () => void;
-  onMicrophone: () => void;
-  onSpeechToggle: () => void;
   onStartCamera: () => void;
+  onVoiceToggle: () => void;
 }
 
 export function MobileActionBar({
@@ -29,17 +26,14 @@ export function MobileActionBar({
   isCameraBusy,
   isCameraReady,
   isListening,
-  isMicrophoneBusy,
-  isMicrophoneReady,
   isThinking,
   isSpeechReady,
-  microphoneAction,
   onAskAi,
   onCaptureFrame,
-  onMicrophone,
-  onSpeechToggle,
   onStartCamera,
-  speechAction,
+  onVoiceToggle,
+  isVoiceBusy,
+  voiceAction,
 }: MobileActionBarProps) {
   return (
     <nav
@@ -60,22 +54,18 @@ export function MobileActionBar({
         </Button>
 
         <Button
-          aria-label={isMicrophoneReady ? speechAction : microphoneAction}
+          aria-label={voiceAction}
           className={cn(
             "h-[58px] min-h-[58px] flex-col gap-1 px-2 text-[0.68rem]",
             isListening && "border-accent/70 bg-accent-strong/18 text-teal-50",
           )}
-          disabled={isMicrophoneReady ? !isSpeechReady : isMicrophoneBusy}
-          onClick={isMicrophoneReady ? onSpeechToggle : onMicrophone}
+          disabled={!isSpeechReady || isVoiceBusy}
+          onClick={onVoiceToggle}
           type="button"
           variant={isListening ? "default" : "secondary"}
         >
-          {isMicrophoneReady ? (
-            <Volume2 aria-hidden="true" className="size-5" />
-          ) : (
-            <Mic aria-hidden="true" className="size-5" />
-          )}
-          语音
+          <Mic aria-hidden="true" className="size-5" />
+          对话
         </Button>
 
         <Button

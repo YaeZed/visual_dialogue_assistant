@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, CameraOff, Image, Mic, Send, Sparkles, Square, Volume2 } from "lucide-react";
 import { Caption } from "@/components/Caption";
@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const FALLBACK_VISUAL_QUESTION = "请描述当前画面，并指出值得我注意的内容。";
+const AUTO_ASK_SILENCE_MS = 1200;
 
 function getCameraCopy(status: CameraStatus, errorMessage: string | null) {
   if (status === "requesting") {
@@ -168,6 +169,7 @@ function getDialogueTone({
 
 function getDialogueTitle({
   answer,
+  frameStatus,
   hasQuestion,
   isListening,
   isSpeaking,
@@ -176,6 +178,7 @@ function getDialogueTitle({
 }: {
   answer: string;
   frame: boolean;
+  frameStatus: string;
   hasQuestion: boolean;
   isListening: boolean;
   isSpeaking: boolean;
@@ -191,6 +194,10 @@ function getDialogueTitle({
 
   if (isListening) {
     return "正在听取问题";
+  }
+
+  if (frameStatus === "capturing") {
+    return "正在抓取画面";
   }
 
   if (answer) {
@@ -213,6 +220,7 @@ function getDialogueDetail({
   answer,
   canAskAi,
   frame,
+  frameStatus,
   frameError,
   hasQuestion,
   isSpeaking,
@@ -223,6 +231,7 @@ function getDialogueDetail({
   answer: string;
   canAskAi: boolean;
   frame: boolean;
+  frameStatus: string;
   frameError: string | null;
   hasQuestion: boolean;
   isSpeaking: boolean;
@@ -239,6 +248,10 @@ function getDialogueDetail({
 
   if (isThinking) {
     return "正在把当前画面和问题发送给 AI。";
+  }
+
+  if (frameStatus === "capturing") {
+    return "问题已听到，正在抓取当前画面。";
   }
 
   if (answer) {
@@ -259,6 +272,7 @@ function getDialogueDetail({
 function App() {
   const [fallbackQuestion, setFallbackQuestion] = useState("");
   const lastSpokenAnswerRef = useRef("");
+  const autoAskedQuestionRef = useRef("");
   const {
     videoRef,
     status,
@@ -315,6 +329,28 @@ function App() {
   const cameraCopy = getCameraCopy(status, errorMessage);
   const microphoneCopy = getMicrophoneCopy(microphoneStatus, microphoneError);
   const speechCopy = getSpeechCopy(speechStatus, speechError);
+  const isVoiceBusy = microphoneStatus === "requesting" || speechStatus === "stopping";
+  const voiceAction = isListening
+    ? "停止聆听"
+    : microphoneStatus === "requesting"
+      ? "请求麦克风..."
+      : "开始对话";
+  const voiceStatusTone = isListening
+    ? "active"
+    : speechStatus === "unsupported" || speechStatus === "error" || microphoneCopy.tone === "error"
+      ? "error"
+      : isMicrophoneReady
+        ? "ready"
+        : "idle";
+  const voiceStatusMessage = isListening
+    ? "正在听取你的问题。说完后会自动抓取画面并提问。"
+    : speechStatus === "unsupported" || speechStatus === "error"
+      ? speechCopy.message
+      : microphoneCopy.tone === "error"
+        ? microphoneCopy.message
+        : isMicrophoneReady
+          ? "麦克风已就绪，点击开始对话后直接说问题。"
+          : "点击开始对话，系统会请求麦克风权限并开始聆听。";
   const spokenText = interimTranscript || transcript;
   const questionText = useMemo(
     () => (transcript.trim() || interimTranscript.trim() || fallbackQuestion).trim(),
@@ -322,12 +358,13 @@ function App() {
   );
   const hasQuestion = Boolean(questionText);
   const canCaptureFrame = isReady && frameStatus !== "capturing";
-  const canAskAi = Boolean(questionText && frame) && !isThinking;
+  const canAskAi = Boolean(questionText && frame) && !isThinking && frameStatus !== "capturing";
   const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
   const orbState = useOrbState({ isListening, isThinking, isSpeaking });
   const dialogueTitle = getDialogueTitle({
     answer,
     frame: Boolean(frame),
+    frameStatus,
     hasQuestion,
     isListening,
     isSpeaking,
@@ -338,6 +375,7 @@ function App() {
     answer,
     canAskAi,
     frame: Boolean(frame),
+    frameStatus,
     frameError,
     hasQuestion,
     isSpeaking,
@@ -376,7 +414,7 @@ function App() {
     },
     {
       label: "视觉",
-      state: frame ? "ready" : hasQuestion && isReady ? "next" : "queued",
+      state: frameStatus === "capturing" ? "active" : frame ? "ready" : hasQuestion && isReady ? "next" : "queued",
       icon: Sparkles,
     },
     {
@@ -385,11 +423,11 @@ function App() {
       icon: Volume2,
     },
   ];
-  const askAiWithFrame = (imageDataUrl: string, prompt: string) =>
+  const askAiWithFrame = useCallback((imageDataUrl: string, prompt: string) =>
     askVisionQuestion({
       prompt,
       imageDataUrl,
-    });
+    }), [askVisionQuestion]);
 
   const handleAskAi = () => {
     if (!frame || !canAskAi) {
@@ -401,6 +439,29 @@ function App() {
 
   const handleCaptureFrame = () => {
     void captureFrame(getVideoElement());
+  };
+
+  const handleStartVoiceConversation = async () => {
+    if (isListening) {
+      stopListening();
+      return;
+    }
+
+    if (!isSpeechSupported || speechStatus === "stopping") {
+      return;
+    }
+
+    clearTranscript();
+    setFallbackQuestion("");
+    autoAskedQuestionRef.current = "";
+
+    const microphoneReady = isMicrophoneReady || (await startMicrophone());
+
+    if (!microphoneReady) {
+      return;
+    }
+
+    startListening();
   };
 
   useEffect(() => {
@@ -435,6 +496,49 @@ function App() {
 
     await askAiWithFrame(nextFrame.dataUrl, nextQuestion);
   };
+
+  useEffect(() => {
+    if (!transcript.trim() || interimTranscript.trim() || !isReady || isThinking) {
+      return;
+    }
+
+    const prompt = transcript.trim();
+
+    if (prompt === autoAskedQuestionRef.current) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      if (!prompt || prompt === autoAskedQuestionRef.current) {
+        return;
+      }
+
+      autoAskedQuestionRef.current = prompt;
+      stopListening();
+
+      void (async () => {
+        const nextFrame = await captureFrame(getVideoElement());
+
+        if (!nextFrame) {
+          autoAskedQuestionRef.current = "";
+          return;
+        }
+
+        await askAiWithFrame(nextFrame.dataUrl, prompt);
+      })();
+    }, AUTO_ASK_SILENCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    askAiWithFrame,
+    captureFrame,
+    getVideoElement,
+    interimTranscript,
+    isReady,
+    isThinking,
+    stopListening,
+    transcript,
+  ]);
 
   return (
     <main className="safe-page safe-page-mobile-actions min-h-svh bg-[radial-gradient(circle_at_50%_20%,rgba(34,197,94,0.14),transparent_30%),linear-gradient(180deg,#0c1019_0%,#06070b_100%)] px-[18px] md:p-7">
@@ -576,30 +680,19 @@ function App() {
 
           <section className="grid gap-2 rounded-card border border-panel-border bg-white/6 p-3">
             <div className="flex min-h-6 items-center gap-2 text-sm text-slate-300" aria-live="polite">
-              <span className={getStatusDotClass(isListening ? "active" : microphoneCopy.tone)} />
-              <span>{isMicrophoneReady ? speechCopy.message : microphoneCopy.message}</span>
+              <span className={getStatusDotClass(voiceStatusTone)} />
+              <span>{voiceStatusMessage}</span>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-1">
-              <Button
-                disabled={microphoneStatus === "requesting" || isMicrophoneReady}
-                onClick={startMicrophone}
-                type="button"
-                variant="secondary"
-              >
-                <Mic aria-hidden="true" className="size-5" />
-                {microphoneCopy.action}
-              </Button>
-              <Button
-                disabled={!isMicrophoneReady || !isSpeechSupported || speechStatus === "stopping"}
-                onClick={isListening ? stopListening : startListening}
-                type="button"
-                variant={isListening ? "default" : "secondary"}
-              >
-                <Volume2 aria-hidden="true" className="size-5" />
-                {speechCopy.action}
-              </Button>
-            </div>
+            <Button
+              disabled={!isSpeechSupported || isVoiceBusy}
+              onClick={handleStartVoiceConversation}
+              type="button"
+              variant={isListening ? "default" : "secondary"}
+            >
+              <Mic aria-hidden="true" className="size-5" />
+              {voiceAction}
+            </Button>
 
             <div className="min-h-16 rounded-card border border-panel-border bg-background/50 p-3 text-sm text-slate-200">
               {spokenText ? (
@@ -766,17 +859,14 @@ function App() {
         isCameraBusy={status === "requesting"}
         isCameraReady={isReady}
         isListening={isListening}
-        isMicrophoneBusy={microphoneStatus === "requesting"}
-        isMicrophoneReady={isMicrophoneReady}
-        isSpeechReady={isSpeechSupported && speechStatus !== "stopping"}
+        isVoiceBusy={isVoiceBusy}
+        isSpeechReady={isSpeechSupported}
         isThinking={isThinking}
-        microphoneAction={microphoneCopy.action}
         onAskAi={handleAskAi}
         onCaptureFrame={handleCaptureFrame}
-        onMicrophone={startMicrophone}
-        onSpeechToggle={isListening ? stopListening : startListening}
         onStartCamera={startCamera}
-        speechAction={speechCopy.action}
+        onVoiceToggle={handleStartVoiceConversation}
+        voiceAction={voiceAction}
       />
     </main>
   );
