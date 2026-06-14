@@ -6,6 +6,7 @@ import {
   ChevronDown,
   History,
   Image,
+  Keyboard,
   ListChecks,
   Mic,
   Send,
@@ -367,11 +368,13 @@ function App() {
   const microphoneCopy = getMicrophoneCopy(microphoneStatus, microphoneError);
   const speechCopy = getSpeechCopy(speechStatus, speechError);
   const isVoiceBusy = microphoneStatus === "requesting" || speechStatus === "stopping";
-  const voiceAction = isListening
-    ? "停止聆听"
-    : microphoneStatus === "requesting"
-      ? "请求麦克风..."
-      : "开始对话";
+  const voiceAction = !isSpeechSupported
+    ? "语音不可用"
+    : isListening
+      ? "停止聆听"
+      : microphoneStatus === "requesting"
+        ? "请求麦克风..."
+        : "开始对话";
   const spokenText = interimTranscript || transcript;
   const questionText = useMemo(
     () => (transcript.trim() || interimTranscript.trim() || fallbackQuestion).trim(),
@@ -381,6 +384,8 @@ function App() {
   const canCaptureFrame = isReady && frameStatus !== "capturing";
   const canAskAi = Boolean(questionText && frame) && !isThinking && frameStatus !== "capturing";
   const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
+  const shouldShowTextQuestionInput =
+    !answer && !isListening && !isThinking && (!spokenText || Boolean(fallbackQuestion));
   const orbState = useOrbState({ isListening, isThinking, isSpeaking });
   const dialogueTitle = getDialogueTitle({
     answer,
@@ -469,6 +474,8 @@ function App() {
                 ? "正在抓取画面"
                 : hasQuestion
                   ? "问题已收到"
+                  : speechStatus === "unsupported" || speechStatus === "error"
+                    ? "可以输入问题"
                   : isMicrophoneReady
                     ? "可以开始对话"
                     : "摄像头已就绪";
@@ -495,7 +502,7 @@ function App() {
                 : hasQuestion
                   ? "下一步需要抓取当前画面，系统随后会自动或手动提问。"
                   : speechStatus === "unsupported" || speechStatus === "error"
-                    ? speechCopy.message
+                    ? `${speechCopy.message} 也可以直接输入问题。`
                     : microphoneCopy.tone === "error"
                       ? microphoneCopy.message
                       : isMicrophoneReady
@@ -833,6 +840,19 @@ function App() {
                   <p className="m-0 text-sm leading-relaxed text-slate-300">{panelDetail}</p>
                 </div>
 
+                {shouldShowTextQuestionInput && (
+                  <label className="grid gap-2">
+                    <span className="text-xs font-bold uppercase text-muted">文本问题</span>
+                    <textarea
+                      aria-label="输入文本问题"
+                      className="min-h-[92px] w-full resize-none rounded-card border border-panel-border bg-background/62 px-3 py-2.5 text-sm leading-relaxed text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-accent/70 focus:ring-2 focus:ring-accent/20"
+                      onChange={(event) => setFallbackQuestion(event.target.value)}
+                      placeholder="输入你想问 AI 的问题"
+                      value={fallbackQuestion}
+                    />
+                  </label>
+                )}
+
                 {answer && !isListening && !isThinking && (
                   <div className="max-h-36 overflow-auto rounded-card border border-panel-border bg-background/48 p-3 text-sm leading-relaxed text-slate-200">
                     <p className="m-0">{answer}</p>
@@ -924,6 +944,11 @@ function App() {
                     <Button disabled={!canCaptureFrame} onClick={handleCaptureFrame} type="button">
                       <Image aria-hidden="true" className="size-5" />
                       {frameStatus === "capturing" ? "抓取中..." : "抓取画面"}
+                    </Button>
+                  ) : speechStatus === "unsupported" || speechStatus === "error" ? (
+                    <Button disabled type="button" variant="secondary">
+                      <Keyboard aria-hidden="true" className="size-5" />
+                      先输入问题
                     </Button>
                   ) : (
                     <Button

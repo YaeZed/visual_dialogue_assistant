@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 6 / PR28
+Phase 6 / PR29
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -71,6 +71,7 @@ Phase 6 / PR28
 | PR26 | P3 弱网慢响应提示：AI 请求超过 8 秒显示等待反馈 | PR25 |
 | PR27 | P3 弱网抓帧压缩：自适应降低 JPEG 体积到约 40KB | PR26 |
 | PR28 | P3 AI 请求失败恢复：明确保留问题和画面并引导重试 | PR27 |
+| PR29 | P2 显式文本输入：语音识别不可用时仍可输入问题并复用视觉提问链路 | PR28 |
 
 ## Decisions Made
 | Decision | Rationale |
@@ -85,6 +86,7 @@ Phase 6 / PR28
 | vConsole 注入调试 | Windows 无法用 Safari Web Inspector |
 | 本地 Node 后端代理 | Vite 前端变量会暴露到浏览器；后端代理让 API key 留在 Node 进程和 `.env` 中 |
 | P0 优化先做自动链路 | 直接减少用户完成一次视觉问答的操作数；保留手动抓帧/提问作为失败兜底，不改变成本边界 |
+| 文本输入复用现有视觉提问链路 | 语音不可用时不新建发送路径，只把文本作为问题来源接入原有抓帧和 AI 请求流程，降低回归风险 |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
