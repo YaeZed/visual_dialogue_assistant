@@ -518,6 +518,30 @@
 | Browser mobile check | viewport 390x844 | no horizontal overflow; bottom bar buttons visible | `scrollWidth=375`, buttons `摄像头/对话/画面/提问` visible | passed |
 | Browser console | warning/error logs | no app runtime errors | only reduced-motion Framer Motion warning | passed |
 
+### PR30: 回答摘要和复制
+- **Status:** ready_for_pr
+- Actions taken:
+  - 按 `docs/design.md` P3 扩展项拆分本次范围，只处理回答摘要和复制，不改变 AI 请求和 TTS 链路。
+  - 增加浏览器端回答摘要规则：清理空白后优先取首句，过长时截断到固定长度。
+  - 回答生成后在当前步骤卡片展示摘要，并提供“复制摘要”和“复制全文”两个操作。
+  - 复制使用 Clipboard API；成功后按钮短暂显示“已复制”，失败时给出手动复制提示。
+- Files modified:
+  - frontend/src/App.tsx
+  - task_plan.md
+  - findings.md
+  - progress.md
+
+## Test Results: PR30
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| Whitespace check | `git diff --check` | no whitespace errors | passed; only CRLF warnings | passed |
+| TypeScript build | `node node_modules\typescript\bin\tsc --build frontend\tsconfig.json` | TypeScript build passes | passed | passed |
+| Vite build | `node node_modules\vite\bin\vite.js build --config frontend\vite.config.ts` | production bundle builds | built `../dist` successfully | passed |
+| Dev health | `GET /` and `GET /api/health` | frontend 200 and backend health JSON | frontend 200; health ok with `qwen-vl-plus` | passed |
+| Browser desktop check | in-app browser `http://127.0.0.1:5173/` | no Vite overlay or console errors | main present, one start entry, logs empty | passed |
+| Browser mobile viewport | viewport 390x844 | no horizontal overflow; bottom actions visible | `scrollWidth=375`, `clientWidth=375`, 4 mobile actions visible | passed |
+| Clipboard copy action | answer present in secure browser context | copy buttons write summary/full answer to clipboard | needs real answer state; not triggered in desktop no-camera path | blocked |
+
 ### PR29: 显式文本问题输入
 - **Status:** ready_for_pr
 - Actions taken:

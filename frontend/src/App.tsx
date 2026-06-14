@@ -3,7 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Camera,
   CameraOff,
+  Check,
   ChevronDown,
+  Copy,
   History,
   Image,
   Keyboard,
@@ -36,6 +38,26 @@ const FALLBACK_VISUAL_QUESTION = "请描述当前画面，并指出值得我注�
 const AUTO_ASK_SILENCE_MS = 1200;
 const FOLLOW_UP_IDLE_TIMEOUT_MS = 15000;
 const SLOW_AI_RESPONSE_MS = 8000;
+const ANSWER_SUMMARY_MAX_LENGTH = 82;
+
+type CopyTarget = "answer" | "summary";
+
+function getAnswerSummary(answer: string) {
+  const normalizedAnswer = answer.replace(/\s+/g, " ").trim();
+
+  if (!normalizedAnswer) {
+    return "";
+  }
+
+  const sentenceMatch = normalizedAnswer.match(/^.{12,}?[。！？.!?]/u);
+  const summary = sentenceMatch?.[0] ?? normalizedAnswer;
+
+  if (summary.length <= ANSWER_SUMMARY_MAX_LENGTH) {
+    return summary;
+  }
+
+  return `${summary.slice(0, ANSWER_SUMMARY_MAX_LENGTH).trim()}...`;
+}
 
 function getCameraCopy(status: CameraStatus, errorMessage: string | null) {
   if (status === "requesting") {
@@ -308,6 +330,8 @@ function App() {
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [isFollowUpListening, setIsFollowUpListening] = useState(false);
   const [isAiResponseSlow, setIsAiResponseSlow] = useState(false);
+  const [copiedTarget, setCopiedTarget] = useState<CopyTarget | null>(null);
+  const [copyError, setCopyError] = useState("");
   const lastSpokenAnswerRef = useRef("");
   const autoAskedQuestionRef = useRef("");
   const lastFollowUpCompletionRef = useRef(0);
@@ -384,6 +408,7 @@ function App() {
   const canCaptureFrame = isReady && frameStatus !== "capturing";
   const canAskAi = Boolean(questionText && frame) && !isThinking && frameStatus !== "capturing";
   const fallbackQuestionText = !spokenText && fallbackQuestion ? fallbackQuestion : "";
+  const answerSummary = useMemo(() => getAnswerSummary(answer), [answer]);
   const shouldShowTextQuestionInput =
     !answer && !isListening && !isThinking && (!spokenText || Boolean(fallbackQuestion));
   const orbState = useOrbState({ isListening, isThinking, isSpeaking });
@@ -526,6 +551,25 @@ function App() {
     void captureFrame(getVideoElement());
   };
 
+  const handleCopyAnswer = async (text: string, target: CopyTarget) => {
+    if (!text) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedTarget(target);
+      setCopyError("");
+
+      window.setTimeout(() => {
+        setCopiedTarget(null);
+      }, 1600);
+    } catch {
+      setCopiedTarget(null);
+      setCopyError("复制失败，请手动选中文本复制。");
+    }
+  };
+
   const handleStartVoiceConversation = async () => {
     setIsFollowUpListening(false);
 
@@ -564,6 +608,8 @@ function App() {
     if (!answer) {
       lastSpokenAnswerRef.current = "";
       setIsFollowUpListening(false);
+      setCopiedTarget(null);
+      setCopyError("");
       stop();
     }
   }, [answer, stop]);
@@ -854,8 +900,46 @@ function App() {
                 )}
 
                 {answer && !isListening && !isThinking && (
-                  <div className="max-h-36 overflow-auto rounded-card border border-panel-border bg-background/48 p-3 text-sm leading-relaxed text-slate-200">
-                    <p className="m-0">{answer}</p>
+                  <div className="grid gap-3 rounded-card border border-panel-border bg-background/48 p-3">
+                    <div className="grid gap-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="m-0 text-xs font-bold uppercase text-muted">回答摘要</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            disabled={!answerSummary}
+                            onClick={() => void handleCopyAnswer(answerSummary, "summary")}
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                          >
+                            {copiedTarget === "summary" ? (
+                              <Check aria-hidden="true" className="size-4" />
+                            ) : (
+                              <Copy aria-hidden="true" className="size-4" />
+                            )}
+                            {copiedTarget === "summary" ? "已复制" : "复制摘要"}
+                          </Button>
+                          <Button
+                            onClick={() => void handleCopyAnswer(answer, "answer")}
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                          >
+                            {copiedTarget === "answer" ? (
+                              <Check aria-hidden="true" className="size-4" />
+                            ) : (
+                              <Copy aria-hidden="true" className="size-4" />
+                            )}
+                            {copiedTarget === "answer" ? "已复制" : "复制全文"}
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="m-0 text-sm leading-relaxed text-slate-100">{answerSummary}</p>
+                      {copyError && <p className="m-0 text-xs text-warning">{copyError}</p>}
+                    </div>
+                    <div className="max-h-36 overflow-auto text-sm leading-relaxed text-slate-200">
+                      <p className="m-0">{answer}</p>
+                    </div>
                   </div>
                 )}
 
