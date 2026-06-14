@@ -12,7 +12,7 @@
 - 严禁最后一天一次性导入
 
 ## Current Phase
-Phase 6 / PR21
+Phase 6 / PR24
 
 ## PR 拆分计划（与 Phase 对应）
 
@@ -66,6 +66,7 @@ Phase 6 / PR21
 | PR21 | P0 自动对话链路：合并麦克风/语音识别，并在语音结束后自动抓帧提问 | PR20 |
 | PR22 | P1 AI 思考时沉浸式等待体验：视频遮罩、居中 Orb、等待文案 | PR21 |
 | PR23 | P1 Orb 首屏视觉权重与首次启动引导 | PR22 |
+| PR24 | P2 精简右侧面板信息密度：当前步骤优先、详情与上下文默认折叠 | PR23 |
 
 ## Decisions Made
 | Decision | Rationale |
